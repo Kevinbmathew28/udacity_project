@@ -9,6 +9,14 @@ let puzzle = [];
 let timerInterval;
 let elapsedSeconds = 0;
 
+function applyTheme(theme) {
+  document.body.classList.toggle('dark-mode', theme === 'dark');
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.textContent = theme === 'dark' ? '🌙 Dark Mode' : '🌞 Light Mode';
+  }
+}
+
 function startTimer() {
   stopTimer();
   timerInterval = setInterval(() => {
@@ -186,6 +194,19 @@ async function hintGame() {
 
 // Wire buttons
 window.addEventListener('load', () => {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  applyTheme(savedTheme);
+
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const isDarkMode = document.body.classList.contains('dark-mode');
+      const nextTheme = isDarkMode ? 'light' : 'dark';
+      localStorage.setItem('theme', nextTheme);
+      applyTheme(nextTheme);
+    });
+  }
+
   document.getElementById('new-game').addEventListener('click', newGame);
   document.getElementById('hint-button').addEventListener('click', hintGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);

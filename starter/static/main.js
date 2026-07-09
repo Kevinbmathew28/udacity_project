@@ -49,6 +49,58 @@ function updateTimer() {
   timer.textContent = `${minutes}:${seconds}`;
 }
 
+function loadLeaderboard() {
+  const storedEntries = localStorage.getItem('leaderboard');
+  return storedEntries ? JSON.parse(storedEntries) : [];
+}
+
+function saveLeaderboard(entries) {
+  localStorage.setItem('leaderboard', JSON.stringify(entries));
+}
+
+function renderLeaderboard() {
+  const leaderboard = document.getElementById('leaderboard');
+  if (!leaderboard) {
+    return;
+  }
+  const tbody = leaderboard.querySelector('tbody');
+  if (!tbody) {
+    return;
+  }
+
+  const entries = loadLeaderboard();
+  tbody.innerHTML = '';
+
+  if (entries.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 4;
+    cell.textContent = 'No entries yet';
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    return;
+  }
+
+  entries.forEach((entry, index) => {
+    const row = document.createElement('tr');
+    const rank = document.createElement('td');
+    const name = document.createElement('td');
+    const difficulty = document.createElement('td');
+    const time = document.createElement('td');
+
+    rank.textContent = index + 1;
+    name.textContent = entry.name;
+    difficulty.textContent = entry.difficulty;
+    time.textContent = entry.time;
+
+    row.appendChild(rank);
+    row.appendChild(name);
+    row.appendChild(difficulty);
+    row.appendChild(time);
+    tbody.appendChild(row);
+  });
+}
+
 function createBoardElement() {
   const boardDiv = document.getElementById('sudoku-board');
   boardDiv.innerHTML = '';
@@ -161,6 +213,28 @@ async function checkSolution() {
   }
   if (incorrect.size === 0) {
     stopTimer();
+    const name = prompt('Enter your name for the leaderboard:');
+    if (name) {
+      const difficultySelect = document.getElementById('difficulty-select');
+      const difficulty = difficultySelect ? difficultySelect.value : 'easy';
+      const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+      const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+      const entry = {
+        name: name.trim(),
+        difficulty,
+        time: `${minutes}:${seconds}`
+      };
+      const entries = loadLeaderboard();
+      entries.push(entry);
+      entries.sort((a, b) => {
+        const timeA = a.time.split(':').map(Number);
+        const timeB = b.time.split(':').map(Number);
+        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+      });
+      const topEntries = entries.slice(0, 10);
+      saveLeaderboard(topEntries);
+      renderLeaderboard();
+    }
     msg.style.color = '#388e3c';
     msg.innerText = 'Congratulations! You solved it!';
   } else {
@@ -210,6 +284,7 @@ window.addEventListener('load', () => {
   document.getElementById('new-game').addEventListener('click', newGame);
   document.getElementById('hint-button').addEventListener('click', hintGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
+  renderLeaderboard();
   // initialize
   newGame();
 });

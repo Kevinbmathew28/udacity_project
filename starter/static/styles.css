@@ -78,6 +78,17 @@ button:hover {
     background: #1565c0;
 }
 
+#timer-container {
+    margin: 0 auto 10px;
+    text-align: center;
+}
+
+#timer {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+}
+
 #message {
     margin-left: 20px;
     font-size: 16px;

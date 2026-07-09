@@ -1,5 +1,10 @@
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
+const DIFFICULTY_CLUES = {
+  easy: 40,
+  medium: 32,
+  hard: 26
+};
 let puzzle = [];
 
 function createBoardElement() {
@@ -48,7 +53,10 @@ function renderPuzzle(puz) {
 }
 
 async function newGame() {
-  const res = await fetch('/new');
+  const difficultySelect = document.getElementById('difficulty-select');
+  const difficulty = difficultySelect.value;
+  const clues = DIFFICULTY_CLUES[difficulty] || 35;
+  const res = await fetch(`/new?clues=${clues}`);
   const data = await res.json();
   renderPuzzle(data.puzzle);
   document.getElementById('message').innerText = '';
@@ -96,9 +104,33 @@ async function checkSolution() {
   }
 }
 
+async function hintGame() {
+  const res = await fetch('/hint', {method: 'POST'});
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById('message').innerText = data.error;
+    return;
+  }
+
+  if (data.message) {
+    document.getElementById('message').innerText = data.message;
+    return;
+  }
+
+  const idx = data.row * SIZE + data.col;
+  const boardDiv = document.getElementById('sudoku-board');
+  const inputs = boardDiv.getElementsByTagName('input');
+  const inp = inputs[idx];
+  inp.value = data.value;
+  inp.disabled = true;
+  inp.className = 'sudoku-cell prefilled';
+}
+
 // Wire buttons
 window.addEventListener('load', () => {
   document.getElementById('new-game').addEventListener('click', newGame);
+  document.getElementById('hint-button').addEventListener('click', hintGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
   // initialize
   newGame();

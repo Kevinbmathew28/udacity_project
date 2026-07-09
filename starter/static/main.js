@@ -20,9 +20,29 @@ function createBoardElement() {
       input.className = 'sudoku-cell';
       input.dataset.row = i;
       input.dataset.col = j;
-      input.addEventListener('input', (e) => {
+      input.addEventListener('input', async (e) => {
         const val = e.target.value.replace(/[^1-9]/g, '');
         e.target.value = val;
+
+        if (!val) {
+          e.target.className = 'sudoku-cell';
+          return;
+        }
+
+        const row = parseInt(e.target.dataset.row, 10);
+        const col = parseInt(e.target.dataset.col, 10);
+        const res = await fetch('/validate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({row, col, value: parseInt(val, 10)})
+        });
+        const data = await res.json();
+
+        if (data.correct) {
+          e.target.className = 'sudoku-cell';
+        } else {
+          e.target.className = 'sudoku-cell incorrect';
+        }
       });
       rowDiv.appendChild(input);
     }

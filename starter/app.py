@@ -72,5 +72,20 @@ def hint() -> Any:
     return jsonify({"message": "Puzzle already complete"})
 
 
+@app.route("/validate", methods=["POST"])
+def validate() -> Any:
+    """Validate a single cell against the active solution."""
+    data = request.json
+    row = data.get("row")
+    col = data.get("col")
+    value = data.get("value")
+    solution = CURRENT.get("solution")
+
+    if solution is None:
+        return jsonify({"error": "No game in progress"}), 400
+
+    return jsonify({"correct": solution[row][col] == value})
+
+
 if __name__ == "__main__":
     app.run(debug=True)

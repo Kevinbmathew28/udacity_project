@@ -1,39 +1,54 @@
-from flask import Flask, render_template, jsonify, request
+"""Flask application for the Sudoku starter project."""
+
+from typing import Any, Dict, List, Optional
+
+from flask import Flask, jsonify, render_template, request
+
 import sudoku_logic
 
 app = Flask(__name__)
 
-# Keep a simple in-memory store for current puzzle and solution
-CURRENT = {
-    'puzzle': None,
-    'solution': None
+# Keep a simple in-memory store for the current puzzle and solution.
+CURRENT: Dict[str, Optional[List[List[int]]]] = {
+    "puzzle": None,
+    "solution": None,
 }
 
-@app.route('/')
-def index():
-    return render_template('index.html')
 
-@app.route('/new')
-def new_game():
-    clues = int(request.args.get('clues', 35))
+@app.route("/")
+def index() -> str:
+    """Render the main Sudoku page."""
+    return render_template("index.html")
+
+
+@app.route("/new")
+def new_game() -> Any:
+    """Generate a new Sudoku puzzle and store it as the current game."""
+    clues = int(request.args.get("clues", 35))
     puzzle, solution = sudoku_logic.generate_puzzle(clues)
-    CURRENT['puzzle'] = puzzle
-    CURRENT['solution'] = solution
-    return jsonify({'puzzle': puzzle})
+    CURRENT["puzzle"] = puzzle
+    CURRENT["solution"] = solution
+    return jsonify({"puzzle": puzzle})
 
-@app.route('/check', methods=['POST'])
-def check_solution():
-    data = request.json
-    board = data.get('board')
-    solution = CURRENT.get('solution')
+
+@app.route("/check", methods=["POST"])
+def check_solution() -> Any:
+    """Return the coordinates of incorrect values compared to the solution."""
+    data = request.get_json()
+    board = data.get("board")
+    solution = CURRENT.get("solution")
+
     if solution is None:
-        return jsonify({'error': 'No game in progress'}), 400
-    incorrect = []
-    for i in range(sudoku_logic.SIZE):
-        for j in range(sudoku_logic.SIZE):
-            if board[i][j] != solution[i][j]:
-                incorrect.append([i, j])
-    return jsonify({'incorrect': incorrect})
+        return jsonify({"error": "No game in progress"}), 400
 
-if __name__ == '__main__':
+    incorrect: List[List[int]] = []
+    for row_index in range(sudoku_logic.SIZE):
+        for col_index in range(sudoku_logic.SIZE):
+            if board[row_index][col_index] != solution[row_index][col_index]:
+                incorrect.append([row_index, col_index])
+
+    return jsonify({"incorrect": incorrect})
+
+
+if __name__ == "__main__":
     app.run(debug=True)

@@ -1,5 +1,10 @@
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
+const DIFFICULTY_CLUES = {
+  easy: 40,
+  medium: 32,
+  hard: 26
+};
 let puzzle = [];
 
 function createBoardElement() {
@@ -48,7 +53,10 @@ function renderPuzzle(puz) {
 }
 
 async function newGame() {
-  const res = await fetch('/new');
+  const difficultySelect = document.getElementById('difficulty');
+  const difficulty = difficultySelect.value;
+  const clues = DIFFICULTY_CLUES[difficulty];
+  const res = await fetch(`/new?clues=${clues}`);
   const data = await res.json();
   renderPuzzle(data.puzzle);
   document.getElementById('message').innerText = '';

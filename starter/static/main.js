@@ -9,6 +9,21 @@ let puzzle = [];
 let timerInterval;
 let elapsedSeconds = 0;
 
+function applyTheme(theme) {
+  document.body.classList.toggle('dark-mode', theme === 'dark');
+  const themeButton = document.getElementById('theme-toggle');
+  if (themeButton) {
+    themeButton.textContent = theme === 'dark' ? '🌞 Light Mode' : '🌙 Dark Mode';
+  }
+}
+
+function toggleTheme() {
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  const nextTheme = isDarkMode ? 'light' : 'dark';
+  localStorage.setItem('sudoku-theme', nextTheme);
+  applyTheme(nextTheme);
+}
+
 function startTimer() {
   if (timerInterval) {
     return;
@@ -187,9 +202,13 @@ async function hintGame() {
 
 // Wire buttons
 window.addEventListener('load', () => {
+  const savedTheme = localStorage.getItem('sudoku-theme') || 'light';
+  applyTheme(savedTheme);
+
   document.getElementById('new-game').addEventListener('click', newGame);
   document.getElementById('hint-button').addEventListener('click', hintGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
   // initialize
   newGame();
 });

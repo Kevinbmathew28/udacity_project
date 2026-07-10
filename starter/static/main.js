@@ -56,6 +56,56 @@ function updateTimer() {
   }
 }
 
+function loadLeaderboard() {
+  const stored = localStorage.getItem('sudoku-leaderboard');
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveLeaderboard(entries) {
+  localStorage.setItem('sudoku-leaderboard', JSON.stringify(entries));
+}
+
+function renderLeaderboard() {
+  const tbody = document.querySelector('#leaderboard tbody');
+  if (!tbody) {
+    return;
+  }
+
+  const entries = loadLeaderboard();
+  tbody.innerHTML = '';
+
+  if (entries.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 4;
+    cell.textContent = 'No scores yet';
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    return;
+  }
+
+  entries.forEach((entry, index) => {
+    const row = document.createElement('tr');
+    const rankCell = document.createElement('td');
+    rankCell.textContent = index + 1;
+    row.appendChild(rankCell);
+
+    const nameCell = document.createElement('td');
+    nameCell.textContent = entry.name;
+    row.appendChild(nameCell);
+
+    const difficultyCell = document.createElement('td');
+    difficultyCell.textContent = entry.difficulty;
+    row.appendChild(difficultyCell);
+
+    const timeCell = document.createElement('td');
+    timeCell.textContent = entry.time;
+    row.appendChild(timeCell);
+
+    tbody.appendChild(row);
+  });
+}
+
 async function validateCellInput(event) {
   const input = event.target;
   const value = input.value;
@@ -172,6 +222,21 @@ async function checkSolution() {
   }
   if (incorrect.size === 0) {
     stopTimer();
+    const playerName = window.prompt('Enter your name for the leaderboard:') || 'Anonymous';
+    const difficultySelect = document.getElementById('difficulty');
+    const difficulty = difficultySelect.value;
+    const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+    const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+    const time = `${minutes}:${seconds}`;
+    const entries = loadLeaderboard();
+    entries.push({name: playerName, difficulty, time});
+    entries.sort((a, b) => {
+      const aTime = a.time.split(':').reduce((total, part) => total * 60 + parseInt(part, 10), 0);
+      const bTime = b.time.split(':').reduce((total, part) => total * 60 + parseInt(part, 10), 0);
+      return aTime - bTime;
+    });
+    saveLeaderboard(entries.slice(0, 10));
+    renderLeaderboard();
     msg.style.color = '#388e3c';
     msg.innerText = 'Congratulations! You solved it!';
   } else {
@@ -209,6 +274,7 @@ window.addEventListener('load', () => {
   document.getElementById('hint-button').addEventListener('click', hintGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
   document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  renderLeaderboard();
   // initialize
   newGame();
 });

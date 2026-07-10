@@ -6,6 +6,40 @@ const DIFFICULTY_CLUES = {
   hard: 26
 };
 let puzzle = [];
+let timerInterval;
+let elapsedSeconds = 0;
+
+function startTimer() {
+  if (timerInterval) {
+    return;
+  }
+  timerInterval = setInterval(() => {
+    elapsedSeconds += 1;
+    updateTimer();
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
+function resetTimer() {
+  stopTimer();
+  elapsedSeconds = 0;
+  updateTimer();
+}
+
+function updateTimer() {
+  const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+  const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+  const timer = document.getElementById('timer');
+  if (timer) {
+    timer.textContent = `${minutes}:${seconds}`;
+  }
+}
 
 async function validateCellInput(event) {
   const input = event.target;
@@ -84,6 +118,8 @@ async function newGame() {
   const data = await res.json();
   renderPuzzle(data.puzzle);
   document.getElementById('message').innerText = '';
+  resetTimer();
+  startTimer();
 }
 
 async function checkSolution() {
@@ -120,6 +156,7 @@ async function checkSolution() {
     }
   }
   if (incorrect.size === 0) {
+    stopTimer();
     msg.style.color = '#388e3c';
     msg.innerText = 'Congratulations! You solved it!';
   } else {

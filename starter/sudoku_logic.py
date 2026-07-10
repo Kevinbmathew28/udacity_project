@@ -51,22 +51,52 @@ def fill_board(board: Board) -> bool:
     return True
 
 
+def count_solutions(board: Board, limit: int = 2) -> int:
+    """Count the number of solutions for a Sudoku board up to ``limit``."""
+    board_copy = deep_copy(board)
+
+    for row in range(SIZE):
+        for col in range(SIZE):
+            if board_copy[row][col] == EMPTY:
+                possible = list(range(1, SIZE + 1))
+                random.shuffle(possible)
+                for candidate in possible:
+                    if is_safe(board_copy, row, col, candidate):
+                        board_copy[row][col] = candidate
+                        solutions = count_solutions(board_copy, limit)
+                        board_copy[row][col] = EMPTY
+                        if solutions >= limit:
+                            return limit
+                return 0
+
+    return 1
+
+
+def _has_unique_solution(board: Board) -> bool:
+    """Return True when the board has exactly one solution."""
+    return count_solutions(board, limit=2) == 1
+
+
 def remove_cells(board: Board, clues: int) -> None:
-    """Remove values from the board until it has the requested clue count."""
+    """Remove values from the board until the clue count is reached."""
     attempts = SIZE * SIZE - clues
+
     while attempts > 0:
         row = random.randrange(SIZE)
         col = random.randrange(SIZE)
+
         if board[row][col] != EMPTY:
             board[row][col] = EMPTY
             attempts -= 1
 
-
 def generate_puzzle(clues: int = 35) -> Tuple[Board, Board]:
-    """Generate a Sudoku puzzle and its solved solution."""
     board = create_empty_board()
     fill_board(board)
+
     solution = deep_copy(board)
+
     remove_cells(board, clues)
+
     puzzle = deep_copy(board)
+
     return puzzle, solution

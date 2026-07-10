@@ -53,7 +53,7 @@ function renderPuzzle(puz) {
 }
 
 async function newGame() {
-  const difficultySelect = document.getElementById('difficulty');
+  const difficultySelect = document.getElementById("difficulty");
   const difficulty = difficultySelect.value;
   const clues = DIFFICULTY_CLUES[difficulty];
   const res = await fetch(`/new?clues=${clues}`);
@@ -104,9 +104,30 @@ async function checkSolution() {
   }
 }
 
+async function hintGame() {
+  const res = await fetch('/hint', {method: 'POST'});
+  const data = await res.json();
+  const msg = document.getElementById('message');
+
+  if (data.message) {
+    msg.style.color = '#d32f2f';
+    msg.innerText = data.message;
+    return;
+  }
+
+  const idx = data.row * SIZE + data.col;
+  const input = document.querySelector(`.sudoku-cell[data-row="${data.row}"][data-col="${data.col}"]`);
+  input.value = data.value;
+  input.disabled = true;
+  input.className = 'sudoku-cell prefilled';
+  msg.style.color = '#388e3c';
+  msg.innerText = 'Hint used.';
+}
+
 // Wire buttons
 window.addEventListener('load', () => {
   document.getElementById('new-game').addEventListener('click', newGame);
+  document.getElementById('hint-button').addEventListener('click', hintGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
   // initialize
   newGame();

@@ -50,5 +50,29 @@ def check_solution() -> Any:
     return jsonify({"incorrect": incorrect})
 
 
+@app.route("/hint", methods=["POST"])
+def get_hint() -> Any:
+    """Fill the first empty cell with the correct solution value."""
+    puzzle = CURRENT.get("puzzle")
+    solution = CURRENT.get("solution")
+
+    if puzzle is None or solution is None:
+        return jsonify({"error": "No game in progress"}), 400
+
+    for row_index in range(sudoku_logic.SIZE):
+        for col_index in range(sudoku_logic.SIZE):
+            if puzzle[row_index][col_index] == sudoku_logic.EMPTY:
+                value = solution[row_index][col_index]
+                puzzle[row_index][col_index] = value
+                CURRENT["puzzle"] = puzzle
+                return jsonify({
+                    "row": row_index,
+                    "col": col_index,
+                    "value": value,
+                })
+
+    return jsonify({"message": "Puzzle already complete"})
+
+
 if __name__ == "__main__":
     app.run(debug=True)

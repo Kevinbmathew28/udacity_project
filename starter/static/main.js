@@ -7,6 +7,27 @@ const DIFFICULTY_CLUES = {
 };
 let puzzle = [];
 
+async function validateCellInput(event) {
+  const input = event.target;
+  const value = input.value;
+
+  if (value === '') {
+    input.className = 'sudoku-cell';
+    return;
+  }
+
+  const row = parseInt(input.dataset.row, 10);
+  const col = parseInt(input.dataset.col, 10);
+  const res = await fetch('/validate', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({row, col, value: parseInt(value, 10)})
+  });
+  const data = await res.json();
+
+  input.className = data.correct ? 'sudoku-cell' : 'sudoku-cell incorrect';
+}
+
 function createBoardElement() {
   const boardDiv = document.getElementById('sudoku-board');
   boardDiv.innerHTML = '';
@@ -23,6 +44,9 @@ function createBoardElement() {
       input.addEventListener('input', (e) => {
         const val = e.target.value.replace(/[^1-9]/g, '');
         e.target.value = val;
+        if (val !== '') {
+          validateCellInput(e);
+        }
       });
       rowDiv.appendChild(input);
     }

@@ -1,0 +1,18 @@
+[
+  {
+    "task": "Testing framework setup",
+    "prompt": "I have a legacy Flask Sudoku app. Before refactoring, help me set up pytest tests that verify the home page loads and the current Sudoku board renders correctly."
+  },
+  {
+    "task": "Unique solution validation",
+    "prompt": "Help me create a Sudoku solver in Python that can count solutions and confirm a generated Sudoku puzzle has exactly one unique solution."
+  },
+  {
+    "task": "Scoreboard local storage",
+    "prompt": "Help me add a Top 10 Sudoku scoreboard using browser localStorage that saves player name, time, and difficulty."
+  },
+  {
+    "task": "Responsive styling",
+    "prompt": "Help me style a Flask Sudoku board with responsive CSS, light and dark mode support, and alternating colors for each 3x3 Sudoku square."
+  }
+]

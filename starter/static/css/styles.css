@@ -1,0 +1,153 @@
+:root {
+    --bg-color: #f4f6f8;
+    --text-color: #1f2937;
+    --card-color: #ffffff;
+    --border-color: #111827;
+    --cell-light: #ffffff;
+    --cell-dark: #e8eef7;
+    --invalid-color: #fecaca;
+    --valid-color: #bbf7d0;
+    --hint-color: #fde68a;
+}
+
+body.dark-mode {
+    --bg-color: #111827;
+    --text-color: #f9fafb;
+    --card-color: #1f2937;
+    --border-color: #f9fafb;
+    --cell-light: #374151;
+    --cell-dark: #4b5563;
+    --invalid-color: #7f1d1d;
+    --valid-color: #14532d;
+    --hint-color: #854d0e;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.app-container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header,
+.controls,
+.timer,
+.scoreboard {
+    background: var(--card-color);
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+button,
+select {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #9ca3af;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.sudoku-board {
+   display: grid;
+grid-template-columns: repeat(9, 50px);
+grid-template-rows: repeat(9, 50px);
+justify-content: center;
+margin: 30px auto;
+border: 3px solid #111827;
+width: fit-content;
+}
+
+.cell {
+    width: 50px;
+height: 50px;
+text-align: center;
+font-size: 22px;
+border: 1px solid #6b7280;
+box-sizing: border-box;
+}
+
+.cell:nth-child(3n) {
+    border-right: 3px solid #111827;
+}
+
+.cell:nth-child(n+19):nth-child(-n+27),
+.cell:nth-child(n+46):nth-child(-n+54) {
+    border-bottom: 3px solid #111827;
+}
+
+.box-light {
+   background-color: #ffffff;
+}
+
+.box-dark {
+    background-color: #e8eef7;
+
+.prefilled {
+    font-weight: bold;
+    color: #2563eb;
+}
+
+.invalid {
+    background-color: #fecaca !important;
+}
+
+.valid {
+   background-color: #bbf7d0 !important;
+}
+
+.hinted {
+    background-color: #fde68a !important;
+}
+
+.message {
+    text-align: center;
+    font-weight: bold;
+    color: #16a34a;
+    margin: 12px 0;
+}
+
+.scoreboard ol {
+    padding-left: 24px;
+}
+
+@media (max-width: 600px) {
+    .app-container {
+        padding: 10px;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    button,
+    select {
+        width: 100%;
+    }
+}

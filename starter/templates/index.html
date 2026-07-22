@@ -1,18 +1,48 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Sudoku Game</title>
-  <link rel="stylesheet" href="/static/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Sudoku</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
+
 <body>
-  <h1>Sudoku Game</h1>
-  <div id="sudoku-board"></div>
-  <div class="controls">
-    <button id="new-game">New Game</button>
-    <button id="check-solution">Check Solution</button>
-    <span id="message"></span>
-  </div>
-  <script src="/static/main.js"></script>
+    <main class="app-container">
+        <header>
+            <h1>Sudoku</h1>
+            <button id="theme-toggle">Dark Mode</button>
+        </header>
+
+        <section class="controls">
+            <label for="difficulty">Difficulty:</label>
+
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+
+            <button id="new-game">New Game</button>
+            <button id="hint">Hint</button>
+            <button id="check">Check</button>
+        </section>
+
+        <section class="timer">
+            Time: <span id="timer">00:00</span>
+        </section>
+
+        <section id="message" class="message"></section>
+
+        <section id="board" class="sudoku-board"></section>
+
+        <section class="scoreboard">
+            <h2>Top 10 Fastest Times</h2>
+            <ol id="score-list"></ol>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
 </body>
 </html>

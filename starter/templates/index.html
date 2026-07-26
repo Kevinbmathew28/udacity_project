@@ -1,18 +1,96 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Sudoku Game</title>
-  <link rel="stylesheet" href="/static/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Game</title>
+
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <h1>Sudoku Game</h1>
-  <div id="sudoku-board"></div>
-  <div class="controls">
-    <button id="new-game">New Game</button>
-    <button id="check-solution">Check Solution</button>
-    <span id="message"></span>
-  </div>
-  <script src="/static/main.js"></script>
+<div class="control-group">
+    <label for="player-name">Player Name</label>
+    <input id="player-name" type="text" maxlength="20" placeholder="Enter your name">
+</div>
+<div class="container">
+
+    <h1>Sudoku Game</h1>
+
+    <div class="top-controls">
+
+        <div class="control-group">
+            <label>Difficulty</label>
+
+            <select id="difficulty">
+                <option value="45">Easy</option>
+                <option value="35" selected>Medium</option>
+                <option value="25">Hard</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>Timer</label>
+            <span id="timer">00:00</span>
+        </div>
+
+        <div class="control-group">
+            <button id="theme-toggle">
+                🌙 Dark Mode
+            </button>
+        </div>
+
+    </div>
+
+    <div id="sudoku-board"></div>
+
+    <div class="controls">
+
+        <button id="new-game">
+            New Game
+        </button>
+
+        <button id="hint-btn">
+            Hint
+        </button>
+
+        <button id="check-solution">
+            Check
+        </button>
+
+    </div>
+
+    <div id="message"></div>
+
+    <div class="leaderboard">
+
+        <h2>
+            🏆 Top 10 Fastest Times
+        </h2>
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Rank</th>
+                    <th>Name</th>
+                    <th>Difficulty</th>
+                    <th>Time</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="leaderboard-body">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script src="/static/main.js"></script>
+
 </body>
 </html>

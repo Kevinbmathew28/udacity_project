@@ -58,3 +58,24 @@ Use GitHub Copilot to refactor the code for this game to add more advanced featu
 - The game should be responsive and work well on both desktop and mobile devices.
 - UI colors should be visually appealing and accessible.
 - Completed and correct puzzles should display a congratulatory message with the time taken and hints used and ask for the user's name for Top 10 times.
+
+## Running the Tests
+
+Run the test suite with:
+
+```bash
+python -m pytest -q
+```
+
+## Features Implemented
+
+- Sudoku puzzle generator with a unique solution
+- Difficulty selector (Easy, Medium, Hard)
+- Timer
+- Hint button
+- Check Puzzle button
+- Immediate feedback for invalid entries
+- Top 10 leaderboard using browser localStorage
+- Dark mode
+- Responsive design
+- Congratulatory message when the puzzle is solved

@@ -6,12 +6,29 @@
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <h1>Sudoku Game</h1>
-  <div id="sudoku-board"></div>
-  <div class="controls">
-    <button id="new-game">New Game</button>
-    <button id="check-solution">Check Solution</button>
-    <span id="message"></span>
+  <div class="app-shell">
+    <button id="theme-toggle" class="theme-toggle" type="button">🌙 Dark Mode</button>
+    <h1>Sudoku Game</h1>
+    <div class="controls top-controls">
+      <label for="difficulty-select">Difficulty:</label>
+      <select id="difficulty-select">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+    <div id="sudoku-board"></div>
+    <div id="timer" class="timer" aria-live="polite">00:00</div>
+    <div id="leaderboard" class="leaderboard">
+      <h2>Top 10 Leaderboard</h2>
+      <ol id="leaderboard-list"></ol>
+    </div>
+    <div class="controls button-row">
+      <button id="new-game">New Game</button>
+      <button id="check-solution">Check Solution</button>
+      <button id="hint-button">Hint</button>
+      <span id="message"></span>
+    </div>
   </div>
   <script src="/static/main.js"></script>
 </body>

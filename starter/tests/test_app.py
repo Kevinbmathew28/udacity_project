@@ -35,6 +35,29 @@ def test_new_game_route_custom_clues(client):
     assert sum(1 for row in data['puzzle'] for cell in row if cell == 0) == 81 - 30
 
 
+def test_new_game_route_includes_solution(client):
+    response = client.get('/new')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert 'solution' in data
+    assert isinstance(data['solution'], list)
+    assert len(data['solution']) == 9
+
+
+def test_new_game_route_easy_difficulty(client):
+    response = client.get('/new?difficulty=easy')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert sum(1 for row in data['puzzle'] for cell in row if cell != 0) == 45
+
+
+def test_new_game_route_hard_difficulty(client):
+    response = client.get('/new?difficulty=hard')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert sum(1 for row in data['puzzle'] for cell in row if cell != 0) == 25
+
+
 def test_check_solution_without_game(client):
     CURRENT['solution'] = None
     response = client.post('/check', json={'board': [[0] * 9 for _ in range(9)]})

@@ -42,6 +42,15 @@ python app.py
 
 7. Open http://127.0.0.1:5000 in your browser.
 
+
+
+## Running Tests
+To run the test suite, ensure your virtual environment is activated and run:
+```bash
+pytest
+
+
+
 ## Project Instructions
 
 Use GitHub Copilot to refactor the code for this game to add more advanced features. The goal is to create a more modern and maintainable codebase and add additional functionality to the final product. You can use any combination of code completion and chat features, like Ask, Edit, or Agent modes.

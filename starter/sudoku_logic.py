@@ -8,16 +8,16 @@ DIFFICULTY_SETTINGS = {
     "medium": 35,
     "hard": 25,
 }
-
+# Create a deep copy of the Sudoku board to avoid modifying the original board.
 
 def deep_copy(board):
     return copy.deepcopy(board)
 
-
+# Create an empty 9x9 Sudoku board initialized with EMPTY values.
 def create_empty_board():
     return [[EMPTY for _ in range(SIZE)] for _ in range(SIZE)]
 
-
+# Check whether a number can be safely placed in the specified row and column.
 def is_safe(board, row, col, num):
     for x in range(SIZE):
         if board[row][x] == num or board[x][col] == num:
@@ -31,7 +31,7 @@ def is_safe(board, row, col, num):
                 return False
     return True
 
-
+# Fill the Sudoku board using a recursive backtracking algorithm.
 def fill_board(board):
     for row in range(SIZE):
         for col in range(SIZE):
@@ -47,7 +47,7 @@ def fill_board(board):
                 return False
     return True
 
-
+# Remove cells from the completed board while ensuring the puzzle has a unique solution.
 def remove_cells(board, clues):
     cells_to_remove = SIZE * SIZE - clues
     attempts = 0
@@ -65,7 +65,7 @@ def remove_cells(board, clues):
         else:
             board[row][col] = original
 
-
+# Generate a Sudoku puzzle based on the selected difficulty level.
 def generate_puzzle(difficulty="medium"):
     difficulty_name = difficulty.lower()
     if difficulty_name not in DIFFICULTY_SETTINGS:
@@ -81,7 +81,7 @@ def generate_puzzle(difficulty="medium"):
         if sum(cell != EMPTY for row in puzzle for cell in row) == clues:
             return puzzle, solution
 
-
+# Count the number of valid solutions to verify that the puzzle has a unique solution.
 def count_solutions(board, limit=2):
     board = deep_copy(board)
 

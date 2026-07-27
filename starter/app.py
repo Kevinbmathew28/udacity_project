@@ -2,17 +2,18 @@ from flask import Flask, render_template, jsonify, request
 import sudoku_logic
 
 app = Flask(__name__)
-
+# Store the current game state, including the puzzle, solution, and difficulty.
 CURRENT = {
     'puzzle': None,
     'solution': None,
     'difficulty': 'medium',
 }
-
+# Render the main Sudoku game page.
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# Start a new Sudoku game using the selected difficulty
 @app.route('/new')
 def new_game():
     difficulty = request.args.get('difficulty', 'medium').lower()
@@ -22,6 +23,7 @@ def new_game():
     CURRENT['difficulty'] = difficulty
     return jsonify({'puzzle': puzzle, 'difficulty': difficulty})
 
+# Compare the player's board with the correct solution
 @app.route('/check', methods=['POST'])
 def check_solution():
     data = request.json
@@ -36,7 +38,7 @@ def check_solution():
                 incorrect.append([i, j])
     return jsonify({'incorrect': incorrect})
 
-
+# Return one valid hint for an empty cell
 @app.route('/hint', methods=['POST'])
 def get_hint():
     data = request.json

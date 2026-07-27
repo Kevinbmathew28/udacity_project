@@ -36,3 +36,22 @@ When suggesting code:
 - Preserve existing functionality.
 - Explain major code changes before applying them.
 - Prefer clean, readable, and maintainable code.
+
+## Refactor Legacy Code to Modern Standards
+
+### Modular Design
+- Break code into reusable, single-responsibility components.
+- Separate Sudoku game logic, Flask routes, UI rendering, validation, and leaderboard logic.
+- Reuse helper functions instead of duplicating code.
+- Keep functions small, focused, and easy to test.
+
+### Documentation
+- Add comments for complex algorithms such as Sudoku generation, unique solution checking, hint generation, and puzzle validation.
+- Use meaningful variable and function names.
+- Keep formatting and naming consistent throughout the project.
+
+### Error Handling
+- Validate all user inputs before processing.
+- Return meaningful JSON error messages from Flask routes.
+- Handle missing game state or invalid requests gracefully.
+- Avoid crashes by checking for invalid or empty values.

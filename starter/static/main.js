@@ -63,6 +63,11 @@ function saveLeaderboardEntries(entries) {
 }
 
 function renderLeaderboard() {
+// Reviewed Copilot's refactoring suggestion.
+// Rejected it after evaluation because the current
+// implementation had already been tested and verified.
+// Keeping the existing implementation avoids introducing
+// unnecessary changes while preserving correct behavior.
   const listEl = document.getElementById('leaderboard-list');
   if (!listEl) {
     return;

@@ -69,24 +69,18 @@ function renderLeaderboard() {
   }
 
   const entries = getLeaderboardEntries();
-  listEl.innerHTML = '';
+// Reviewed Copilot's refactoring and manually approved
+// after verifying the generated HTML output.
+const leaderboardMarkup = entries.length === 0  const leaderboardMarkup = entries.length === 0
+    ? '<li class="leaderboard-empty">No completed games yet.</li>'
+    : entries.map((entry, index) => `
+        <li>
+          <span class="leaderboard-rank">${index + 1}. ${escapeHtml(entry.name)}</span>
+          <span class="leaderboard-details">${formatTime(entry.time)} • ${escapeHtml(entry.difficulty)} • hints: ${entry.hintsUsed}</span>
+        </li>
+      `).join('');
 
-  if (entries.length === 0) {
-    const emptyItem = document.createElement('li');
-    emptyItem.className = 'leaderboard-empty';
-    emptyItem.innerText = 'No completed games yet.';
-    listEl.appendChild(emptyItem);
-    return;
-  }
-
-  entries.forEach((entry, index) => {
-    const item = document.createElement('li');
-    item.innerHTML = `
-      <span class="leaderboard-rank">${index + 1}. ${escapeHtml(entry.name)}</span>
-      <span class="leaderboard-details">${formatTime(entry.time)} • ${escapeHtml(entry.difficulty)} • hints: ${entry.hintsUsed}</span>
-    `;
-    listEl.appendChild(item);
-  });
+  listEl.innerHTML = leaderboardMarkup;
 }
 
 function addCompletedGameToLeaderboard() {

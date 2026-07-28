@@ -50,7 +50,8 @@ def check_solution():
         for j in range(sudoku_logic.SIZE):
             if board[i][j] != solution[i][j]:
                 incorrect.append([i, j])
-    return jsonify({'incorrect': incorrect})
+    completed = len(incorrect) == 0
+    return jsonify({'incorrect': incorrect, 'completed': completed})
 
 
 @app.route('/hint', methods=['POST'])

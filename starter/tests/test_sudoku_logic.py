@@ -1,6 +1,6 @@
 import pytest
 
-from app import app as flask_app
+from app import CURRENT, app as flask_app
 from generator import count_solutions
 from sudoku_logic import (
     EMPTY,
@@ -129,3 +129,18 @@ def test_hint_route_returns_one_correct_cell_for_an_empty_spot():
     assert payload['col'] in range(SIZE)
     assert puzzle[payload['row']][payload['col']] == EMPTY
     assert payload['value'] != EMPTY
+
+
+def test_check_route_reports_completion_when_board_matches_solution():
+    client = flask_app.test_client()
+    response = client.get('/new?difficulty=easy')
+
+    assert response.status_code == 200
+    solution = CURRENT['solution']
+
+    check_response = client.post('/check', json={'board': deep_copy(solution)})
+
+    assert check_response.status_code == 200
+    payload = check_response.get_json()
+    assert payload['completed'] is True
+    assert payload['incorrect'] == []

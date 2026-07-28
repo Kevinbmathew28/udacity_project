@@ -202,7 +202,7 @@ async function checkSolution() {
       inp.className = 'sudoku-cell incorrect';
     }
   }
-  if (incorrect.size === 0) {
+  if (data.completed) {
     stopTimer();
     msg.style.color = '#388e3c';
     msg.innerText = 'Congratulations! You solved it!';

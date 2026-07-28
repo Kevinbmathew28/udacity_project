@@ -1,6 +1,7 @@
 import pytest
 
 from app import app as flask_app
+from generator import count_solutions
 from sudoku_logic import (
     EMPTY,
     SIZE,
@@ -69,6 +70,12 @@ def test_fill_board_returns_a_complete_valid_solution():
     assert is_valid_sudoku_board(board)
 
 
+def test_count_solutions_detects_multiple_solutions_for_an_empty_board():
+    board = create_empty_board()
+
+    assert count_solutions(board, limit=2) == 2
+
+
 def test_generate_puzzle_returns_a_puzzle_and_solution():
     puzzle, solution = generate_puzzle(clues=35)
 
@@ -77,6 +84,7 @@ def test_generate_puzzle_returns_a_puzzle_and_solution():
     assert all(len(row) == SIZE for row in puzzle)
     assert all(len(row) == SIZE for row in solution)
     assert is_valid_sudoku_board(solution)
+    assert count_solutions(puzzle, limit=2) == 1
 
     for row in range(SIZE):
         for col in range(SIZE):

@@ -1,6 +1,48 @@
+:root {
+    --bg: #f4f4f4;
+    --text: #333;
+    --card-bg: #fff;
+    --primary: #1976d2;
+    --primary-hover: #1565c0;
+    --muted: #555;
+    --danger: #d32f2f;
+    --success: #388e3c;
+    --board-border: #333;
+    --cell-border: #bbb;
+    --cell-bg: #fafafa;
+    --cell-focus: #e0f7fa;
+    --prefilled-bg: #e0e0e0;
+    --prefilled-text: #333;
+    --incorrect-bg: #ffcdd2;
+    --card-shadow: rgba(0,0,0,0.1);
+    --leaderboard-shadow: rgba(0,0,0,0.08);
+}
+
+/* Dark theme variables */
+.dark {
+    --bg: #121212;
+    --text: #eaeaea;
+    --card-bg: #1e1e1e;
+    --primary: #90caf9;
+    --primary-hover: #64b5f6;
+    --muted: #cfcfcf;
+    --danger: #ef9a9a;
+    --success: #81c784;
+    --board-border: #e0e0e0;
+    --cell-border: #444;
+    --cell-bg: #2a2a2a;
+    --cell-focus: #37474f;
+    --prefilled-bg: #424242;
+    --prefilled-text: #fff;
+    --incorrect-bg: #ff8a80;
+    --card-shadow: rgba(0,0,0,0.4);
+    --leaderboard-shadow: rgba(0,0,0,0.35);
+}
+
 body {
     font-family: Arial, sans-serif;
-    background: #f4f4f4;
+    background: var(--bg);
+    color: var(--text);
     text-align: center;
     margin: 0;
     padding: 0;
@@ -8,15 +50,15 @@ body {
 
 h1 {
     margin-top: 30px;
-    color: #333;
+    color: var(--text);
 }
 
 #sudoku-board {
     display: inline-block;
     margin: 30px auto;
-    border: 4px solid #333;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 4px solid var(--board-border);
+    background: var(--card-bg);
+    box-shadow: 0 2px 8px var(--card-shadow);
 }
 
 .sudoku-row {
@@ -26,26 +68,27 @@ h1 {
 .sudoku-cell {
     width: 40px;
     height: 40px;
-    border: 1px solid #bbb;
+    border: 1px solid var(--cell-border);
     text-align: center;
     font-size: 20px;
     outline: none;
-    background: #fafafa;
-    transition: background 0.2s;
+    background: var(--cell-bg);
+    color: var(--text);
+    transition: background 0.2s, color 0.2s;
 }
 
 .sudoku-cell:focus {
-    background: #e0f7fa;
+    background: var(--cell-focus);
 }
 
 .sudoku-cell.prefilled {
-    background: #e0e0e0;
+    background: var(--prefilled-bg);
     font-weight: bold;
-    color: #333;
+    color: var(--prefilled-text);
 }
 
 .sudoku-cell.incorrect {
-    background: #ffcdd2;
+    background: var(--incorrect-bg);
 }
 
 .sudoku-cell:nth-child(3),
@@ -67,7 +110,7 @@ button {
     margin: 0 8px;
     font-size: 16px;
     border: none;
-    background: #1976d2;
+    background: var(--primary);
     color: #fff;
     border-radius: 4px;
     cursor: pointer;
@@ -75,35 +118,35 @@ button {
 }
 
 button:hover {
-    background: #1565c0;
+    background: var(--primary-hover);
 }
 
 #message {
     margin-left: 20px;
     font-size: 16px;
-    color: #d32f2f;
+    color: var(--danger);
 }
 
 #timer {
     font-size: 24px;
     font-weight: bold;
-    color: #333;
+    color: var(--text);
     margin-top: 10px;
 }
 
 .leaderboard {
     max-width: 480px;
     margin: 24px auto 0;
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px var(--leaderboard-shadow);
     padding: 16px 20px;
 }
 
 .leaderboard h2 {
     margin: 0 0 12px;
     font-size: 20px;
-    color: #333;
+    color: var(--text);
 }
 
 #leaderboard-list {
@@ -127,11 +170,11 @@ button:hover {
 
 .leaderboard-rank {
     font-weight: bold;
-    color: #1976d2;
+    color: var(--primary);
 }
 
 .leaderboard-details {
-    color: #555;
+    color: var(--muted);
     font-size: 14px;
     text-align: right;
 }

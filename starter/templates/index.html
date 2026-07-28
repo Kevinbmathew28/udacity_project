@@ -1,18 +1,34 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Sudoku Game</title>
-  <link rel="stylesheet" href="/static/styles.css">
+    <meta charset="utf-8">
+    <title>Sudoku Game</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <h1>Sudoku Game</h1>
-  <div id="sudoku-board"></div>
-  <div class="controls">
-    <button id="new-game">New Game</button>
-    <button id="check-solution">Check Solution</button>
-    <span id="message"></span>
-  </div>
-  <script src="/static/main.js"></script>
+
+    <h1>Sudoku Game</h1>
+
+    <div class="controls">
+
+        <label for="difficulty">Difficulty:</label>
+
+        <select id="difficulty">
+            <option value="easy" selected>Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+
+        <button id="new-game">New Game</button>
+        <button id="check-solution">Check Solution</button>
+
+        <span id="message"></span>
+
+    </div>
+
+    <div id="sudoku-board"></div>
+
+    <script src="/static/main.js"></script>
+
 </body>
 </html>

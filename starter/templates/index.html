@@ -1,10 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sudoku Game</title>
-    <link rel="stylesheet" href="/static/styles.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
 
     <h1>Sudoku Game</h1>
@@ -14,25 +18,25 @@
         <label for="difficulty">Difficulty:</label>
 
         <select id="difficulty">
-            <option value="easy" selected>Easy</option>
-            <option value="medium">Medium</option>
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
             <option value="hard">Hard</option>
         </select>
 
         <button id="new-game">New Game</button>
-
-        <!-- NEW BUTTON -->
         <button id="hint">Hint</button>
-
         <button id="check-solution">Check Solution</button>
 
         <span id="message"></span>
 
     </div>
 
+    <div id="timer">Time: 00:00</div>
+
     <div id="sudoku-board"></div>
 
-    <script src="/static/main.js"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
 
 </body>
+
 </html>

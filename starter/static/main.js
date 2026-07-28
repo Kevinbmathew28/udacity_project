@@ -1,6 +1,35 @@
 const SIZE = 9;
 let puzzle = [];
 
+// ---------------- TIMER ----------------
+let timer = null;
+let seconds = 0;
+
+function startTimer() {
+    clearInterval(timer);
+    seconds = 0;
+    updateTimer();
+
+    timer = setInterval(function () {
+        seconds++;
+        updateTimer();
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timer);
+}
+
+function updateTimer() {
+    const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const secs = String(seconds % 60).padStart(2, "0");
+
+    document.getElementById("timer").innerText =
+        `Time: ${minutes}:${secs}`;
+}
+// ---------------------------------------
+
+
 function createBoardElement() {
     const board = document.getElementById("sudoku-board");
     board.innerHTML = "";
@@ -99,8 +128,12 @@ async function newGame() {
 
     renderPuzzle(data.puzzle);
 
+    // Start timer for every new game
+    startTimer();
+
     document.getElementById("message").innerText = "";
 }
+
 async function hint() {
 
     const response = await fetch("/hint");
@@ -173,26 +206,28 @@ async function checkSolution() {
 
     cells.forEach((cell, index) => {
 
-    if (cell.disabled)
-        return;
+        if (cell.disabled)
+            return;
 
-    cell.className = "sudoku-cell";
+        cell.className = "sudoku-cell";
 
-    // Do not highlight empty cells
-    if (cell.value === "") {
-        return;
-    }
+        if (cell.value === "") {
+            return;
+        }
 
-    if (incorrect.has(index)) {
-        cell.classList.add("incorrect");
-    }
-});
+        if (incorrect.has(index)) {
+            cell.classList.add("incorrect");
+        }
+    });
 
     if (incorrect.size === 0) {
 
         message.style.color = "green";
         message.innerText =
             "Congratulations! You solved the puzzle!";
+
+        // Stop timer when solved
+        stopTimer();
 
     } else {
 

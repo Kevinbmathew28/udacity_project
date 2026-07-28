@@ -113,6 +113,17 @@ function addCompletedGameToLeaderboard() {
   renderLeaderboard();
 }
 
+function getCellClassName(row, col, extraClass = '') {
+  const blockRow = Math.floor(row / 3);
+  const blockCol = Math.floor(col / 3);
+  const blockClass = (blockRow + blockCol) % 2 === 0 ? 'block-even' : 'block-odd';
+  const classes = ['sudoku-cell', blockClass];
+  if (extraClass) {
+    classes.push(extraClass);
+  }
+  return classes.join(' ');
+}
+
 function createBoardElement() {
   const boardDiv = document.getElementById('sudoku-board');
   boardDiv.innerHTML = '';
@@ -123,7 +134,7 @@ function createBoardElement() {
       const input = document.createElement('input');
       input.type = 'text';
       input.maxLength = 1;
-      input.className = 'sudoku-cell';
+      input.className = getCellClassName(i, j);
       input.dataset.row = i;
       input.dataset.col = j;
       input.addEventListener('input', (e) => {
@@ -149,10 +160,11 @@ function renderPuzzle(puz) {
       if (val !== 0) {
         inp.value = val;
         inp.disabled = true;
-        inp.className += ' prefilled';
+        inp.className = getCellClassName(i, j, 'prefilled');
       } else {
         inp.value = '';
         inp.disabled = false;
+        inp.className = getCellClassName(i, j);
       }
     }
   }
@@ -198,9 +210,11 @@ async function checkSolution() {
   for (let idx = 0; idx < inputs.length; idx++) {
     const inp = inputs[idx];
     if (inp.disabled) continue;
-    inp.className = 'sudoku-cell';
+    const row = parseInt(inp.dataset.row, 10);
+    const col = parseInt(inp.dataset.col, 10);
+    inp.className = getCellClassName(row, col);
     if (incorrect.has(idx)) {
-      inp.className = 'sudoku-cell incorrect';
+      inp.className = getCellClassName(row, col, 'incorrect');
     }
   }
   if (data.completed) {
@@ -250,7 +264,9 @@ async function applyHint() {
 
   inp.value = data.value;
   inp.disabled = true;
-  inp.className = 'sudoku-cell prefilled';
+  const row = parseInt(inp.dataset.row, 10);
+  const col = parseInt(inp.dataset.col, 10);
+  inp.className = getCellClassName(row, col, 'prefilled');
   hintsUsed += 1;
   msg.style.color = '#388e3c';
   msg.innerText = `Hint used (${hintsUsed}).`;

@@ -112,3 +112,20 @@ def test_index_page_renders_timer_container():
     html = response.get_data(as_text=True)
 
     assert 'id="timer"' in html
+
+
+def test_hint_route_returns_one_correct_cell_for_an_empty_spot():
+    client = flask_app.test_client()
+    response = client.get('/new?difficulty=easy')
+
+    assert response.status_code == 200
+    puzzle = response.get_json()['puzzle']
+
+    hint_response = client.post('/hint', json={'board': puzzle})
+
+    assert hint_response.status_code == 200
+    payload = hint_response.get_json()
+    assert payload['row'] in range(SIZE)
+    assert payload['col'] in range(SIZE)
+    assert puzzle[payload['row']][payload['col']] == EMPTY
+    assert payload['value'] != EMPTY

@@ -1,8 +1,12 @@
 // Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
+const LEADERBOARD_STORAGE_KEY = 'sudoku-leaderboard';
+const MAX_LEADERBOARD_ENTRIES = 10;
 let puzzle = [];
 let timerInterval = null;
 let elapsedSeconds = 0;
+let currentDifficulty = 'medium';
+let hintsUsed = 0;
 
 function formatTime(totalSeconds) {
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
@@ -30,6 +34,82 @@ function startTimer() {
 function stopTimer() {
   clearInterval(timerInterval);
   timerInterval = null;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function getLeaderboardEntries() {
+  try {
+    const storedValue = window.localStorage.getItem(LEADERBOARD_STORAGE_KEY);
+    if (!storedValue) {
+      return [];
+    }
+    return JSON.parse(storedValue);
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveLeaderboardEntries(entries) {
+  window.localStorage.setItem(LEADERBOARD_STORAGE_KEY, JSON.stringify(entries));
+}
+
+function renderLeaderboard() {
+  const listEl = document.getElementById('leaderboard-list');
+  if (!listEl) {
+    return;
+  }
+
+  const entries = getLeaderboardEntries();
+  listEl.innerHTML = '';
+
+  if (entries.length === 0) {
+    const emptyItem = document.createElement('li');
+    emptyItem.className = 'leaderboard-empty';
+    emptyItem.innerText = 'No completed games yet.';
+    listEl.appendChild(emptyItem);
+    return;
+  }
+
+  entries.forEach((entry, index) => {
+    const item = document.createElement('li');
+    item.innerHTML = `
+      <span class="leaderboard-rank">${index + 1}. ${escapeHtml(entry.name)}</span>
+      <span class="leaderboard-details">${formatTime(entry.time)} • ${escapeHtml(entry.difficulty)} • hints: ${entry.hintsUsed}</span>
+    `;
+    listEl.appendChild(item);
+  });
+}
+
+function addCompletedGameToLeaderboard() {
+  const name = window.prompt('Enter your name for the leaderboard:', 'Player');
+  if (name === null) {
+    return;
+  }
+
+  const difficultySelect = document.getElementById('difficulty-select');
+  const difficulty = difficultySelect ? difficultySelect.value : currentDifficulty;
+  const trimmedName = name.trim() || 'Anonymous';
+  const entry = {
+    name: trimmedName,
+    time: elapsedSeconds,
+    difficulty,
+    hintsUsed,
+    completedAt: Date.now()
+  };
+
+  const entries = getLeaderboardEntries();
+  entries.push(entry);
+  entries.sort((a, b) => a.time - b.time || b.completedAt - a.completedAt);
+  saveLeaderboardEntries(entries.slice(0, MAX_LEADERBOARD_ENTRIES));
+  renderLeaderboard();
 }
 
 function createBoardElement() {
@@ -80,6 +160,8 @@ function renderPuzzle(puz) {
 async function newGame() {
   const difficultySelect = document.getElementById('difficulty-select');
   const difficulty = difficultySelect ? difficultySelect.value : 'medium';
+  currentDifficulty = difficulty;
+  hintsUsed = 0;
   const res = await fetch(`/new?difficulty=${encodeURIComponent(difficulty)}`);
   const data = await res.json();
   renderPuzzle(data.puzzle);
@@ -124,6 +206,7 @@ async function checkSolution() {
     stopTimer();
     msg.style.color = '#388e3c';
     msg.innerText = 'Congratulations! You solved it!';
+    addCompletedGameToLeaderboard();
   } else {
     msg.style.color = '#d32f2f';
     msg.innerText = 'Some cells are incorrect.';
@@ -134,6 +217,6 @@ async function checkSolution() {
 window.addEventListener('load', () => {
   document.getElementById('new-game').addEventListener('click', newGame);
   document.getElementById('check-solution').addEventListener('click', checkSolution);
-  // initialize
+  renderLeaderboard();
   newGame();
 });

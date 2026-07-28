@@ -58,3 +58,63 @@ Use GitHub Copilot to refactor the code for this game to add more advanced featu
 - The game should be responsive and work well on both desktop and mobile devices.
 - UI colors should be visually appealing and accessible.
 - Completed and correct puzzles should display a congratulatory message with the time taken and hints used and ask for the user's name for Top 10 times.
+
+## Running the Tests
+
+Run the test suite with:
+
+```bash
+python -m pytest -q
+```
+
+## Features Implemented
+
+- Sudoku puzzle generator with a unique solution
+- Difficulty selector (Easy, Medium, Hard)
+- Timer
+- Hint button
+- Check Puzzle button
+- Immediate feedback for invalid entries
+- Top 10 leaderboard using browser localStorage
+- Dark mode
+- Responsive design
+- Congratulatory message when the puzzle is solved
+
+## Code Quality
+
+The legacy Sudoku application was refactored into modular and reusable components.
+
+- Game generation and validation logic are separated into `sudoku_logic.py`.
+- Flask routes are implemented in `app.py`.
+- HTML templates are organized in the `templates` folder.
+- CSS and JavaScript are organized in the `static` folder.
+- Automated tests are stored in the `tests` folder.
+
+The application uses consistent error handling by returning appropriate JSON error messages for invalid requests or when no active game is available.
+
+All functionality was verified by running the application and executing the pytest test suite after each major feature was added.
+
+## Comments and Documentation
+
+Comments were added to explain important sections of the application, including:
+
+- Sudoku puzzle generation
+- Unique solution validation
+- Hint generation
+- Solution checking
+- Flask routes
+
+These comments improve readability and make the project easier to understand and maintain. Consistent naming conventions and formatting were followed throughout the project.
+
+## Screenshots
+
+The `Screenshots` folder contains GitHub Copilot conversations for the major development milestones, including:
+
+- `copilot_testing_framework.png`
+- `copilot_unique_solution_prompt.png`
+- `copilot_top10_scores.png`
+- `copilot_grid_styling.png`
+- `copilot_timer.png`
+- `copilot_darkmode.png`
+- `copilot_hint.png`
+- `copilot_check_puzzle.png`

@@ -6,12 +6,47 @@
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <h1>Sudoku Game</h1>
-  <div id="sudoku-board"></div>
-  <div class="controls">
-    <button id="new-game">New Game</button>
-    <button id="check-solution">Check Solution</button>
-    <span id="message"></span>
+  <div class="app-shell">
+    <header class="hero-card">
+      <div>
+        <p class="eyebrow">Daily challenge</p>
+        <h1>Sudoku Game</h1>
+      </div>
+      <button id="theme-toggle" type="button" class="ghost-button">Dark Mode</button>
+    </header>
+
+    <section class="controls-card">
+      <div class="control-group">
+        <label for="difficulty">Difficulty</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="control-group compact">
+        <button id="new-game">New Game</button>
+        <button id="check-solution">Check Solution</button>
+        <button id="check-puzzle">Check Puzzle</button>
+        <button id="hint-button">Hint</button>
+      </div>
+      <div class="status-group">
+        <div id="timer" class="timer-pill">Time: 00:00</div>
+        <div id="message" class="message-pill"></div>
+      </div>
+    </section>
+
+    <main class="dashboard">
+      <section class="board-card">
+        <div id="sudoku-board"></div>
+      </section>
+      <aside class="leaderboard-card">
+        <div id="leaderboard" class="leaderboard">
+          <h2>Top 10 Leaderboard</h2>
+          <ol id="leaderboard-list"></ol>
+        </div>
+      </aside>
+    </main>
   </div>
   <script src="/static/main.js"></script>
 </body>

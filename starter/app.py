@@ -9,13 +9,30 @@ CURRENT = {
     'solution': None
 }
 
+
+def get_clues_for_difficulty(difficulty):
+    difficulty_map = {
+        'easy': 45,
+        'medium': 35,
+        'hard': 25,
+    }
+    if difficulty is None:
+        return difficulty_map['medium']
+    normalized = difficulty.lower()
+    return difficulty_map.get(normalized, difficulty_map['medium'])
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/new')
 def new_game():
-    clues = int(request.args.get('clues', 35))
+    clue_arg = request.args.get('clues')
+    if clue_arg is not None:
+        clues = int(clue_arg)
+    else:
+        clues = get_clues_for_difficulty(request.args.get('difficulty'))
     puzzle, solution = sudoku_logic.generate_puzzle(clues)
     CURRENT['puzzle'] = puzzle
     CURRENT['solution'] = solution

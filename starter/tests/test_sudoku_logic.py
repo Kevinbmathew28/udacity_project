@@ -1,5 +1,6 @@
 import pytest
 
+from app import app as flask_app
 from sudoku_logic import (
     EMPTY,
     SIZE,
@@ -82,3 +83,14 @@ def test_generate_puzzle_returns_a_puzzle_and_solution():
             if puzzle[row][col] == EMPTY:
                 continue
             assert puzzle[row][col] == solution[row][col]
+
+
+def test_new_game_route_uses_difficulty_to_select_clues():
+    client = flask_app.test_client()
+    response = client.get('/new?difficulty=hard')
+
+    assert response.status_code == 200
+    puzzle = response.get_json()['puzzle']
+    clues = sum(1 for row in puzzle for cell in row if cell != EMPTY)
+
+    assert clues == 25

@@ -1,22 +1,15 @@
 from board import EMPTY, SIZE, create_empty_board, deep_copy
+from generator import generate_puzzle, remove_cells
 from solver import fill_board
 from validator import is_safe
 
-def remove_cells(board, clues):
-    import random
-
-    attempts = SIZE * SIZE - clues
-    while attempts > 0:
-        row = random.randrange(SIZE)
-        col = random.randrange(SIZE)
-        if board[row][col] != EMPTY:
-            board[row][col] = EMPTY
-            attempts -= 1
-
-def generate_puzzle(clues=35):
-    board = create_empty_board()
-    fill_board(board)
-    solution = deep_copy(board)
-    remove_cells(board, clues)
-    puzzle = deep_copy(board)
-    return puzzle, solution
+__all__ = [
+    "EMPTY",
+    "SIZE",
+    "create_empty_board",
+    "deep_copy",
+    "fill_board",
+    "generate_puzzle",
+    "is_safe",
+    "remove_cells",
+]

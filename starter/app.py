@@ -41,17 +41,17 @@ def get_hint():
     if puzzle is None or solution is None:
         return jsonify({"error": "No active game"}), 400
 
-    empty_cells = []
+    empty = []
 
-    for row in range(sudoku_logic.SIZE):
-        for col in range(sudoku_logic.SIZE):
-            if puzzle[row][col] == 0:
-                empty_cells.append((row, col))
+    for r in range(sudoku_logic.SIZE):
+        for c in range(sudoku_logic.SIZE):
+            if puzzle[r][c] == 0:
+                empty.append((r, c))
 
-    if not empty_cells:
+    if not empty:
         return jsonify({"message": "Puzzle already completed"})
 
-    row, col = random.choice(empty_cells)
+    row, col = random.choice(empty)
 
     value = solution[row][col]
 
@@ -61,6 +61,26 @@ def get_hint():
         "row": row,
         "col": col,
         "value": value
+    })
+
+
+# ---------- NEW ROUTE ----------
+@app.route("/validate", methods=["POST"])
+def validate_cell():
+
+    if CURRENT["solution"] is None:
+        return jsonify({"error": "No active game"}), 400
+
+    data = request.get_json()
+
+    row = int(data["row"])
+    col = int(data["col"])
+    value = int(data["value"])
+
+    correct = CURRENT["solution"][row][col] == value
+
+    return jsonify({
+        "correct": correct
     })
 
 

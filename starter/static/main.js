@@ -21,8 +21,34 @@ function createBoardElement() {
             input.dataset.row = row;
             input.dataset.col = col;
 
-            input.addEventListener("input", function (e) {
+            input.addEventListener("input", async function (e) {
+
                 e.target.value = e.target.value.replace(/[^1-9]/g, "");
+
+                if (e.target.value === "") {
+                    e.target.classList.remove("incorrect");
+                    return;
+                }
+
+                const response = await fetch("/validate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        row: row,
+                        col: col,
+                        value: parseInt(e.target.value)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.correct) {
+                    e.target.classList.remove("incorrect");
+                } else {
+                    e.target.classList.add("incorrect");
+                }
             });
 
             rowDiv.appendChild(input);
@@ -75,7 +101,6 @@ async function newGame() {
 
     document.getElementById("message").innerText = "";
 }
-
 async function hint() {
 
     const response = await fetch("/hint");
@@ -83,18 +108,13 @@ async function hint() {
     const data = await response.json();
 
     if (data.error) {
-
-        document.getElementById("message").innerText =
-            data.error;
-
+        document.getElementById("message").innerText = data.error;
         return;
     }
 
-    const cells =
-        document.querySelectorAll(".sudoku-cell");
+    const cells = document.querySelectorAll(".sudoku-cell");
 
-    const index =
-        data.row * SIZE + data.col;
+    const index = data.row * SIZE + data.col;
 
     cells[index].value = data.value;
     cells[index].disabled = true;
@@ -103,8 +123,7 @@ async function hint() {
 
 async function checkSolution() {
 
-    const cells =
-        document.querySelectorAll(".sudoku-cell");
+    const cells = document.querySelectorAll(".sudoku-cell");
 
     const board = [];
 
@@ -134,13 +153,11 @@ async function checkSolution() {
         body: JSON.stringify({
             board: board
         })
-
     });
 
     const data = await response.json();
 
-    const message =
-        document.getElementById("message");
+    const message = document.getElementById("message");
 
     if (data.error) {
 
@@ -150,26 +167,26 @@ async function checkSolution() {
         return;
     }
 
-    const incorrect =
-        new Set(
-            data.incorrect.map(
-                cell => cell[0] * SIZE + cell[1]
-            )
-        );
+    const incorrect = new Set(
+        data.incorrect.map(cell => cell[0] * SIZE + cell[1])
+    );
 
     cells.forEach((cell, index) => {
 
-        if (cell.disabled)
-            return;
+    if (cell.disabled)
+        return;
 
-        cell.className = "sudoku-cell";
+    cell.className = "sudoku-cell";
 
-        if (incorrect.has(index)) {
+    // Do not highlight empty cells
+    if (cell.value === "") {
+        return;
+    }
 
-            cell.classList.add("incorrect");
-        }
-
-    });
+    if (incorrect.has(index)) {
+        cell.classList.add("incorrect");
+    }
+});
 
     if (incorrect.size === 0) {
 
@@ -182,7 +199,6 @@ async function checkSolution() {
         message.style.color = "red";
         message.innerText =
             "Some cells are incorrect.";
-
     }
 }
 

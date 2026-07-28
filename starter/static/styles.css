@@ -83,3 +83,10 @@ button:hover {
     font-size: 16px;
     color: #d32f2f;
 }
+
+#timer {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+}

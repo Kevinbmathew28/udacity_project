@@ -102,3 +102,13 @@ def test_new_game_route_uses_difficulty_to_select_clues():
     clues = sum(1 for row in puzzle for cell in row if cell != EMPTY)
 
     assert clues == 25
+
+
+def test_index_page_renders_timer_container():
+    client = flask_app.test_client()
+    response = client.get('/')
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+
+    assert 'id="timer"' in html

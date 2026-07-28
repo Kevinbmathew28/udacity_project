@@ -58,3 +58,131 @@ Use GitHub Copilot to refactor the code for this game to add more advanced featu
 - The game should be responsive and work well on both desktop and mobile devices.
 - UI colors should be visually appealing and accessible.
 - Completed and correct puzzles should display a congratulatory message with the time taken and hints used and ask for the user's name for Top 10 times.
+
+
+# Sudoku Game (Flask)
+
+A web-based Sudoku game built using Python Flask. The project was refactored into a modular architecture using GitHub Copilot while preserving the original functionality.
+
+## Features
+
+- Generate random Sudoku puzzles
+- Three difficulty levels (Easy, Medium, Hard)
+- Sudoku solver
+- Hint system
+- Check solution
+- Game timer
+- Top 10 leaderboard
+- Dark mode
+- Responsive UI
+- Unique-solution puzzle generation
+- Automated testing with Pytest
+
+## Project Structure
+
+```
+starter/
+│── app.py
+│── board.py
+│── validator.py
+│── solver.py
+│── generator.py
+│── sudoku_logic.py
+│── static/
+│── templates/
+│── tests/
+```
+
+## Installation
+
+Clone the repository.
+
+```bash
+git clone https://github.com/vuppalapati09/github-copilot-python.git
+```
+
+Move into the project.
+
+```bash
+cd github-copilot-python/starter
+```
+
+Create a virtual environment.
+
+```bash
+python -m venv .venv
+```
+
+Activate it.
+
+Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Install dependencies.
+
+```bash
+pip install -r requirements.txt
+```
+
+## Run the Application
+
+```bash
+python app.py
+```
+
+Open:
+
+```
+http://127.0.0.1:5000
+```
+
+## Run Tests
+
+```bash
+pytest -q
+```
+
+All tests should pass successfully.
+
+## Refactoring Summary
+
+The application was refactored into separate modules:
+
+- board.py
+- validator.py
+- solver.py
+- generator.py
+
+The original functionality was preserved while improving readability and maintainability.
+
+## Screenshots
+
+### Final Application
+
+![Final UI](starter/screenshots/final_ui.png)
+
+### Copilot Refactoring
+
+![Copilot Refactor](starter/screenshots/copilot_refactor.png)
+
+### Testing Framework
+
+![Testing](starter/screenshots/copilot_testing_framework.png)
+
+## Technologies Used
+
+- Python
+- Flask
+- HTML
+- CSS
+- JavaScript
+- Pytest
+- Git
+- GitHub Copilot
+
+## Author
+
+Vuppalapati Surya prakash

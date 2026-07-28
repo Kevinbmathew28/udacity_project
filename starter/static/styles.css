@@ -1,85 +1,325 @@
+:root {
+    --bg: #f4f4f4;
+    --text: #333;
+    --card-bg: #fff;
+    --primary: #1976d2;
+    --primary-hover: #1565c0;
+    --muted: #555;
+    --danger: #d32f2f;
+    --success: #388e3c;
+    --board-border: #333;
+    --cell-border: #bbb;
+    --cell-bg: #fafafa;
+    --cell-alt-bg: #f1f5f9;
+    --cell-focus: #e0f7fa;
+    --prefilled-bg: #e0e0e0;
+    --prefilled-text: #333;
+    --incorrect-bg: #ffcdd2;
+    --card-shadow: rgba(0, 0, 0, 0.12);
+    --leaderboard-shadow: rgba(0, 0, 0, 0.08);
+    --surface: rgba(255, 255, 255, 0.9);
+    --surface-border: #d9d9d9;
+    --control-bg: rgba(255, 255, 255, 0.8);
+    --control-border: #cfd8dc;
+    --focus-ring: rgba(25, 118, 210, 0.3);
+    --message-bg: rgba(211, 47, 47, 0.1);
+    --message-border: rgba(211, 47, 47, 0.2);
+}
+
+.dark {
+    --bg: #121212;
+    --text: #eaeaea;
+    --card-bg: #1e1e1e;
+    --primary: #90caf9;
+    --primary-hover: #64b5f6;
+    --muted: #cfcfcf;
+    --danger: #ef9a9a;
+    --success: #81c784;
+    --board-border: #e0e0e0;
+    --cell-border: #444;
+    --cell-bg: #2a2a2a;
+    --cell-alt-bg: #2f2f2f;
+    --cell-focus: #37474f;
+    --prefilled-bg: #424242;
+    --prefilled-text: #fff;
+    --incorrect-bg: #ff8a80;
+    --card-shadow: rgba(0, 0, 0, 0.4);
+    --leaderboard-shadow: rgba(0, 0, 0, 0.35);
+    --surface: rgba(30, 30, 30, 0.95);
+    --surface-border: #3f3f3f;
+    --control-bg: rgba(33, 33, 33, 0.8);
+    --control-border: #4f4f4f;
+    --focus-ring: rgba(144, 202, 249, 0.35);
+    --message-bg: rgba(239, 154, 154, 0.12);
+    --message-border: rgba(239, 154, 154, 0.2);
+}
+
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
-    background: #f4f4f4;
-    text-align: center;
+    background: var(--bg);
+    color: var(--text);
     margin: 0;
+    min-height: 100vh;
     padding: 0;
 }
 
-h1 {
-    margin-top: 30px;
-    color: #333;
-}
-
-#sudoku-board {
-    display: inline-block;
-    margin: 30px auto;
-    border: 4px solid #333;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.sudoku-row {
-    display: flex;
-}
-
-.sudoku-cell {
-    width: 40px;
-    height: 40px;
-    border: 1px solid #bbb;
+.app-shell {
+    width: min(100%, 860px);
+    margin: 0 auto;
+    padding: 24px 16px 40px;
     text-align: center;
-    font-size: 20px;
-    outline: none;
-    background: #fafafa;
-    transition: background 0.2s;
 }
 
-.sudoku-cell:focus {
-    background: #e0f7fa;
-}
-
-.sudoku-cell.prefilled {
-    background: #e0e0e0;
-    font-weight: bold;
-    color: #333;
-}
-
-.sudoku-cell.incorrect {
-    background: #ffcdd2;
-}
-
-.sudoku-cell:nth-child(3),
-.sudoku-cell:nth-child(6) {
-    border-right: 3px solid #333;
-}
-
-.sudoku-row:nth-child(3) .sudoku-cell,
-.sudoku-row:nth-child(6) .sudoku-cell {
-    border-bottom: 3px solid #333;
+h1 {
+    margin: 0 0 12px;
+    color: var(--text);
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
 }
 
 .controls {
-    margin: 20px auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 12px auto 0;
+    padding: 10px 12px;
+    border: 1px solid var(--control-border);
+    border-radius: 999px;
+    background: var(--control-bg);
+    box-shadow: 0 2px 8px var(--card-shadow);
+    max-width: 680px;
+}
+
+.controls label,
+.controls select,
+.controls button,
+.theme-switch {
+    font-size: 0.95rem;
+}
+
+select {
+    border: 1px solid var(--control-border);
+    border-radius: 999px;
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 8px 12px;
 }
 
 button {
-    padding: 8px 18px;
-    margin: 0 8px;
-    font-size: 16px;
+    padding: 9px 16px;
     border: none;
-    background: #1976d2;
+    background: var(--primary);
     color: #fff;
-    border-radius: 4px;
+    border-radius: 999px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
 }
 
-button:hover {
-    background: #1565c0;
+button:hover,
+button:focus-visible {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+button:focus-visible,
+select:focus-visible,
+.sudoku-cell:focus-visible,
+#theme-toggle:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.theme-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text);
+}
+
+#theme-toggle {
+    accent-color: var(--primary);
+}
+
+#timer {
+    font-size: clamp(1.1rem, 2.2vw, 1.45rem);
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 12px;
+}
+
+.board-shell {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0 6px;
+}
+
+#sudoku-board {
+    display: grid;
+    grid-template-rows: repeat(9, minmax(0, 1fr));
+    width: min(92vw, 560px);
+    aspect-ratio: 1 / 1;
+    margin: 12px auto 0;
+    border: 4px solid var(--board-border);
+    border-radius: 14px;
+    background: var(--card-bg);
+    box-shadow: 0 10px 24px var(--card-shadow);
+    overflow: hidden;
+}
+
+.sudoku-row {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    width: 100%;
+}
+
+.sudoku-cell {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 1px solid var(--cell-border);
+    text-align: center;
+    font-size: clamp(1rem, 2.5vw, 1.35rem);
+    font-weight: 600;
+    outline: none;
+    background: var(--cell-bg);
+    color: var(--text);
+    padding: 0;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.sudoku-cell.block-even {
+    background: var(--cell-alt-bg);
+}
+
+.sudoku-cell.block-odd {
+    background: var(--cell-bg);
+}
+
+.sudoku-cell:focus {
+    background: var(--cell-focus);
+}
+
+.sudoku-cell.prefilled {
+    background: var(--prefilled-bg);
+    font-weight: 700;
+    color: var(--prefilled-text);
+}
+
+.sudoku-cell.incorrect {
+    background: var(--incorrect-bg);
+    color: var(--danger);
+}
+
+.sudoku-row .sudoku-cell:nth-child(3n):not(:nth-child(9n)) {
+    border-right: 3px solid var(--board-border);
+}
+
+.sudoku-row:nth-child(3n):not(:nth-child(9n)) .sudoku-cell {
+    border-bottom: 3px solid var(--board-border);
 }
 
 #message {
-    margin-left: 20px;
-    font-size: 16px;
-    color: #d32f2f;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--message-border);
+    background: var(--message-bg);
+    color: var(--danger);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.leaderboard {
+    max-width: 560px;
+    margin: 20px auto 0;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    box-shadow: 0 6px 16px var(--leaderboard-shadow);
+    padding: 16px 20px;
+}
+
+.leaderboard h2 {
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+    color: var(--text);
+}
+
+#leaderboard-list {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+#leaderboard-list th,
+#leaderboard-list td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--surface-border);
+}
+
+#leaderboard-list th {
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+#leaderboard-list tr:last-child td {
+    border-bottom: none;
+}
+
+#leaderboard-list td:first-child {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.leaderboard-empty-row td {
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .app-shell {
+        padding: 16px 12px 28px;
+    }
+
+    .controls {
+        border-radius: 18px;
+        padding: 12px;
+    }
+
+    .controls > * {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .theme-switch {
+        justify-content: center;
+    }
+
+    #sudoku-board {
+        width: min(100%, calc(100vw - 24px));
+        border-width: 3px;
+    }
+
+    .leaderboard {
+        padding: 14px;
+    }
+
+    #leaderboard-list th,
+    #leaderboard-list td {
+        padding: 8px 6px;
+    }
 }

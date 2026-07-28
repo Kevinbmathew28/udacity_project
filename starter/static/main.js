@@ -69,16 +69,30 @@ function renderLeaderboard() {
   }
 
   const entries = getLeaderboardEntries();
-// Reviewed Copilot's refactoring and manually approved
-// after verifying the generated HTML output.
-const leaderboardMarkup = entries.length === 0  const leaderboardMarkup = entries.length === 0
-    ? '<li class="leaderboard-empty">No completed games yet.</li>'
-    : entries.map((entry, index) => `
-        <li>
-          <span class="leaderboard-rank">${index + 1}. ${escapeHtml(entry.name)}</span>
-          <span class="leaderboard-details">${formatTime(entry.time)} • ${escapeHtml(entry.difficulty)} • hints: ${entry.hintsUsed}</span>
-        </li>
-      `).join('');
+  const leaderboardMarkup = `
+    <thead>
+      <tr>
+        <th scope="col">Rank</th>
+        <th scope="col">Name</th>
+        <th scope="col">Time</th>
+        <th scope="col">Difficulty</th>
+        <th scope="col">Hints</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${entries.length === 0
+        ? '<tr class="leaderboard-empty-row"><td colspan="5">No completed games yet.</td></tr>'
+        : entries.map((entry, index) => `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${escapeHtml(entry.name)}</td>
+              <td>${formatTime(entry.time)}</td>
+              <td>${escapeHtml(entry.difficulty)}</td>
+              <td>${entry.hintsUsed}</td>
+            </tr>
+          `).join('')}
+    </tbody>
+  `;
 
   listEl.innerHTML = leaderboardMarkup;
 }
@@ -134,10 +148,112 @@ function createBoardElement() {
       input.addEventListener('input', (e) => {
         const val = e.target.value.replace(/[^1-9]/g, '');
         e.target.value = val;
+        updateValidationHighlights();
       });
       rowDiv.appendChild(input);
     }
     boardDiv.appendChild(rowDiv);
+  }
+}
+
+function getBoardValues() {
+  const boardDiv = document.getElementById('sudoku-board');
+  if (!boardDiv) {
+    return [];
+  }
+
+  const inputs = boardDiv.getElementsByTagName('input');
+  const board = [];
+  for (let i = 0; i < SIZE; i++) {
+    board[i] = [];
+    for (let j = 0; j < SIZE; j++) {
+      const idx = i * SIZE + j;
+      const val = inputs[idx].value;
+      board[i][j] = val ? parseInt(val, 10) : 0;
+    }
+  }
+  return board;
+}
+
+function getConflictingCellIndices(board) {
+  const conflicts = new Set();
+
+  const markConflicts = (positions) => {
+    if (positions.length > 1) {
+      positions.forEach((index) => conflicts.add(index));
+    }
+  };
+
+  for (let row = 0; row < SIZE; row++) {
+    const valueToPositions = new Map();
+    for (let col = 0; col < SIZE; col++) {
+      const value = board[row][col];
+      if (!value) {
+        continue;
+      }
+      const positions = valueToPositions.get(value) || [];
+      positions.push(row * SIZE + col);
+      valueToPositions.set(value, positions);
+    }
+    valueToPositions.forEach(markConflicts);
+  }
+
+  for (let col = 0; col < SIZE; col++) {
+    const valueToPositions = new Map();
+    for (let row = 0; row < SIZE; row++) {
+      const value = board[row][col];
+      if (!value) {
+        continue;
+      }
+      const positions = valueToPositions.get(value) || [];
+      positions.push(row * SIZE + col);
+      valueToPositions.set(value, positions);
+    }
+    valueToPositions.forEach(markConflicts);
+  }
+
+  for (let boxRow = 0; boxRow < SIZE; boxRow += 3) {
+    for (let boxCol = 0; boxCol < SIZE; boxCol += 3) {
+      const valueToPositions = new Map();
+      for (let row = boxRow; row < boxRow + 3; row++) {
+        for (let col = boxCol; col < boxCol + 3; col++) {
+          const value = board[row][col];
+          if (!value) {
+            continue;
+          }
+          const positions = valueToPositions.get(value) || [];
+          positions.push(row * SIZE + col);
+          valueToPositions.set(value, positions);
+        }
+      }
+      valueToPositions.forEach(markConflicts);
+    }
+  }
+
+  return conflicts;
+}
+
+function updateValidationHighlights() {
+  const boardDiv = document.getElementById('sudoku-board');
+  if (!boardDiv) {
+    return;
+  }
+
+  const inputs = boardDiv.getElementsByTagName('input');
+  const board = getBoardValues();
+  const conflictingIndices = getConflictingCellIndices(board);
+
+  for (let idx = 0; idx < inputs.length; idx++) {
+    const inp = inputs[idx];
+    const row = parseInt(inp.dataset.row, 10);
+    const col = parseInt(inp.dataset.col, 10);
+
+    if (inp.disabled) {
+      inp.className = getCellClassName(row, col, 'prefilled');
+      continue;
+    }
+
+    inp.className = getCellClassName(row, col, conflictingIndices.has(idx) ? 'incorrect' : '');
   }
 }
 
@@ -162,6 +278,7 @@ function renderPuzzle(puz) {
       }
     }
   }
+  updateValidationHighlights();
 }
 
 async function newGame() {
@@ -179,15 +296,7 @@ async function newGame() {
 async function checkSolution() {
   const boardDiv = document.getElementById('sudoku-board');
   const inputs = boardDiv.getElementsByTagName('input');
-  const board = [];
-  for (let i = 0; i < SIZE; i++) {
-    board[i] = [];
-    for (let j = 0; j < SIZE; j++) {
-      const idx = i * SIZE + j;
-      const val = inputs[idx].value;
-      board[i][j] = val ? parseInt(val, 10) : 0;
-    }
-  }
+  const board = getBoardValues();
   const res = await fetch('/check', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -225,15 +334,7 @@ async function checkSolution() {
 async function applyHint() {
   const boardDiv = document.getElementById('sudoku-board');
   const inputs = boardDiv.getElementsByTagName('input');
-  const board = [];
-  for (let i = 0; i < SIZE; i++) {
-    board[i] = [];
-    for (let j = 0; j < SIZE; j++) {
-      const idx = i * SIZE + j;
-      const val = inputs[idx].value;
-      board[i][j] = val ? parseInt(val, 10) : 0;
-    }
-  }
+  const board = getBoardValues();
 
   const res = await fetch('/hint', {
     method: 'POST',
@@ -262,6 +363,7 @@ async function applyHint() {
   const col = parseInt(inp.dataset.col, 10);
   inp.className = getCellClassName(row, col, 'prefilled');
   hintsUsed += 1;
+  updateValidationHighlights();
   msg.style.color = '#388e3c';
   msg.innerText = `Hint used (${hintsUsed}).`;
 }

@@ -1,105 +1,255 @@
-// Client-side rendering and interaction for the Flask-backed Sudoku
 const SIZE = 9;
 let puzzle = [];
 
-function createBoardElement() {
-  const boardDiv = document.getElementById('sudoku-board');
-  boardDiv.innerHTML = '';
-  for (let i = 0; i < SIZE; i++) {
-    const rowDiv = document.createElement('div');
-    rowDiv.className = 'sudoku-row';
-    for (let j = 0; j < SIZE; j++) {
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.maxLength = 1;
-      input.className = 'sudoku-cell';
-      input.dataset.row = i;
-      input.dataset.col = j;
-      input.addEventListener('input', (e) => {
-        const val = e.target.value.replace(/[^1-9]/g, '');
-        e.target.value = val;
-      });
-      rowDiv.appendChild(input);
-    }
-    boardDiv.appendChild(rowDiv);
-  }
+// ---------------- TIMER ----------------
+let timer = null;
+let seconds = 0;
+
+function startTimer() {
+    clearInterval(timer);
+    seconds = 0;
+    updateTimer();
+
+    timer = setInterval(function () {
+        seconds++;
+        updateTimer();
+    }, 1000);
 }
 
-function renderPuzzle(puz) {
-  puzzle = puz;
-  createBoardElement();
-  const boardDiv = document.getElementById('sudoku-board');
-  const inputs = boardDiv.getElementsByTagName('input');
-  for (let i = 0; i < SIZE; i++) {
-    for (let j = 0; j < SIZE; j++) {
-      const idx = i * SIZE + j;
-      const val = puzzle[i][j];
-      const inp = inputs[idx];
-      if (val !== 0) {
-        inp.value = val;
-        inp.disabled = true;
-        inp.className += ' prefilled';
-      } else {
-        inp.value = '';
-        inp.disabled = false;
-      }
+function stopTimer() {
+    clearInterval(timer);
+}
+
+function updateTimer() {
+    const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const secs = String(seconds % 60).padStart(2, "0");
+
+    document.getElementById("timer").innerText =
+        `Time: ${minutes}:${secs}`;
+}
+// ---------------------------------------
+
+
+function createBoardElement() {
+    const board = document.getElementById("sudoku-board");
+    board.innerHTML = "";
+
+    for (let row = 0; row < SIZE; row++) {
+
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "sudoku-row";
+
+        for (let col = 0; col < SIZE; col++) {
+
+            const input = document.createElement("input");
+
+            input.type = "text";
+            input.maxLength = 1;
+            input.className = "sudoku-cell";
+
+            input.dataset.row = row;
+            input.dataset.col = col;
+
+            input.addEventListener("input", async function (e) {
+
+                e.target.value = e.target.value.replace(/[^1-9]/g, "");
+
+                if (e.target.value === "") {
+                    e.target.classList.remove("incorrect");
+                    return;
+                }
+
+                const response = await fetch("/validate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        row: row,
+                        col: col,
+                        value: parseInt(e.target.value)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.correct) {
+                    e.target.classList.remove("incorrect");
+                } else {
+                    e.target.classList.add("incorrect");
+                }
+            });
+
+            rowDiv.appendChild(input);
+        }
+
+        board.appendChild(rowDiv);
     }
-  }
+}
+
+function renderPuzzle(board) {
+
+    puzzle = board;
+
+    createBoardElement();
+
+    const cells = document.querySelectorAll(".sudoku-cell");
+
+    for (let row = 0; row < SIZE; row++) {
+
+        for (let col = 0; col < SIZE; col++) {
+
+            const index = row * SIZE + col;
+
+            if (board[row][col] !== 0) {
+
+                cells[index].value = board[row][col];
+                cells[index].disabled = true;
+                cells[index].classList.add("prefilled");
+
+            } else {
+
+                cells[index].value = "";
+                cells[index].disabled = false;
+            }
+        }
+    }
 }
 
 async function newGame() {
-  const res = await fetch('/new');
-  const data = await res.json();
-  renderPuzzle(data.puzzle);
-  document.getElementById('message').innerText = '';
+
+    const difficulty =
+        document.getElementById("difficulty").value;
+
+    const response =
+        await fetch(`/new?difficulty=${difficulty}`);
+
+    const data = await response.json();
+
+    renderPuzzle(data.puzzle);
+
+    // Start timer for every new game
+    startTimer();
+
+    document.getElementById("message").innerText = "";
+}
+
+async function hint() {
+
+    const response = await fetch("/hint");
+
+    const data = await response.json();
+
+    if (data.error) {
+        document.getElementById("message").innerText = data.error;
+        return;
+    }
+
+    const cells = document.querySelectorAll(".sudoku-cell");
+
+    const index = data.row * SIZE + data.col;
+
+    cells[index].value = data.value;
+    cells[index].disabled = true;
+    cells[index].classList.add("prefilled");
 }
 
 async function checkSolution() {
-  const boardDiv = document.getElementById('sudoku-board');
-  const inputs = boardDiv.getElementsByTagName('input');
-  const board = [];
-  for (let i = 0; i < SIZE; i++) {
-    board[i] = [];
-    for (let j = 0; j < SIZE; j++) {
-      const idx = i * SIZE + j;
-      const val = inputs[idx].value;
-      board[i][j] = val ? parseInt(val, 10) : 0;
+
+    const cells = document.querySelectorAll(".sudoku-cell");
+
+    const board = [];
+
+    for (let row = 0; row < SIZE; row++) {
+
+        board[row] = [];
+
+        for (let col = 0; col < SIZE; col++) {
+
+            const index = row * SIZE + col;
+
+            board[row][col] =
+                cells[index].value === ""
+                    ? 0
+                    : parseInt(cells[index].value);
+        }
     }
-  }
-  const res = await fetch('/check', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({board})
-  });
-  const data = await res.json();
-  const msg = document.getElementById('message');
-  if (data.error) {
-    msg.style.color = '#d32f2f';
-    msg.innerText = data.error;
-    return;
-  }
-  const incorrect = new Set(data.incorrect.map(x => x[0]*SIZE + x[1]));
-  for (let idx = 0; idx < inputs.length; idx++) {
-    const inp = inputs[idx];
-    if (inp.disabled) continue;
-    inp.className = 'sudoku-cell';
-    if (incorrect.has(idx)) {
-      inp.className = 'sudoku-cell incorrect';
+
+    const response = await fetch("/check", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+            board: board
+        })
+    });
+
+    const data = await response.json();
+
+    const message = document.getElementById("message");
+
+    if (data.error) {
+
+        message.style.color = "red";
+        message.innerText = data.error;
+
+        return;
     }
-  }
-  if (incorrect.size === 0) {
-    msg.style.color = '#388e3c';
-    msg.innerText = 'Congratulations! You solved it!';
-  } else {
-    msg.style.color = '#d32f2f';
-    msg.innerText = 'Some cells are incorrect.';
-  }
+
+    const incorrect = new Set(
+        data.incorrect.map(cell => cell[0] * SIZE + cell[1])
+    );
+
+    cells.forEach((cell, index) => {
+
+        if (cell.disabled)
+            return;
+
+        cell.className = "sudoku-cell";
+
+        if (cell.value === "") {
+            return;
+        }
+
+        if (incorrect.has(index)) {
+            cell.classList.add("incorrect");
+        }
+    });
+
+    if (incorrect.size === 0) {
+
+        message.style.color = "green";
+        message.innerText =
+            "Congratulations! You solved the puzzle!";
+
+        // Stop timer when solved
+        stopTimer();
+
+    } else {
+
+        message.style.color = "red";
+        message.innerText =
+            "Some cells are incorrect.";
+    }
 }
 
-// Wire buttons
-window.addEventListener('load', () => {
-  document.getElementById('new-game').addEventListener('click', newGame);
-  document.getElementById('check-solution').addEventListener('click', checkSolution);
-  // initialize
-  newGame();
-});
+window.onload = function () {
+
+    document
+        .getElementById("new-game")
+        .addEventListener("click", newGame);
+
+    document
+        .getElementById("hint")
+        .addEventListener("click", hint);
+
+    document
+        .getElementById("check-solution")
+        .addEventListener("click", checkSolution);
+
+    newGame();
+};

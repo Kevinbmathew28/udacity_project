@@ -1,59 +1,61 @@
-// Client-side rendering and interaction for the Flask-backed Sudoku
-
 const SIZE = 9;
 let puzzle = [];
 
 function createBoardElement() {
-    const boardDiv = document.getElementById("sudoku-board");
-    boardDiv.innerHTML = "";
+    const board = document.getElementById("sudoku-board");
+    board.innerHTML = "";
 
-    for (let i = 0; i < SIZE; i++) {
+    for (let row = 0; row < SIZE; row++) {
+
         const rowDiv = document.createElement("div");
         rowDiv.className = "sudoku-row";
 
-        for (let j = 0; j < SIZE; j++) {
+        for (let col = 0; col < SIZE; col++) {
+
             const input = document.createElement("input");
 
             input.type = "text";
             input.maxLength = 1;
             input.className = "sudoku-cell";
 
-            input.dataset.row = i;
-            input.dataset.col = j;
+            input.dataset.row = row;
+            input.dataset.col = col;
 
-            input.addEventListener("input", (e) => {
-                const value = e.target.value.replace(/[^1-9]/g, "");
-                e.target.value = value;
+            input.addEventListener("input", function (e) {
+                e.target.value = e.target.value.replace(/[^1-9]/g, "");
             });
 
             rowDiv.appendChild(input);
         }
 
-        boardDiv.appendChild(rowDiv);
+        board.appendChild(rowDiv);
     }
 }
 
-function renderPuzzle(puz) {
-    puzzle = puz;
+function renderPuzzle(board) {
+
+    puzzle = board;
 
     createBoardElement();
 
-    const inputs = document.querySelectorAll(".sudoku-cell");
+    const cells = document.querySelectorAll(".sudoku-cell");
 
-    for (let i = 0; i < SIZE; i++) {
-        for (let j = 0; j < SIZE; j++) {
+    for (let row = 0; row < SIZE; row++) {
 
-            const index = i * SIZE + j;
-            const value = puzzle[i][j];
-            const input = inputs[index];
+        for (let col = 0; col < SIZE; col++) {
 
-            if (value !== 0) {
-                input.value = value;
-                input.disabled = true;
-                input.classList.add("prefilled");
+            const index = row * SIZE + col;
+
+            if (board[row][col] !== 0) {
+
+                cells[index].value = board[row][col];
+                cells[index].disabled = true;
+                cells[index].classList.add("prefilled");
+
             } else {
-                input.value = "";
-                input.disabled = false;
+
+                cells[index].value = "";
+                cells[index].disabled = false;
             }
         }
     }
@@ -61,9 +63,11 @@ function renderPuzzle(puz) {
 
 async function newGame() {
 
-    const difficulty = document.getElementById("difficulty").value;
+    const difficulty =
+        document.getElementById("difficulty").value;
 
-    const response = await fetch(`/new?difficulty=${difficulty}`);
+    const response =
+        await fetch(`/new?difficulty=${difficulty}`);
 
     const data = await response.json();
 
@@ -72,23 +76,50 @@ async function newGame() {
     document.getElementById("message").innerText = "";
 }
 
+async function hint() {
+
+    const response = await fetch("/hint");
+
+    const data = await response.json();
+
+    if (data.error) {
+
+        document.getElementById("message").innerText =
+            data.error;
+
+        return;
+    }
+
+    const cells =
+        document.querySelectorAll(".sudoku-cell");
+
+    const index =
+        data.row * SIZE + data.col;
+
+    cells[index].value = data.value;
+    cells[index].disabled = true;
+    cells[index].classList.add("prefilled");
+}
+
 async function checkSolution() {
 
-    const inputs = document.querySelectorAll(".sudoku-cell");
+    const cells =
+        document.querySelectorAll(".sudoku-cell");
 
     const board = [];
 
-    for (let i = 0; i < SIZE; i++) {
+    for (let row = 0; row < SIZE; row++) {
 
-        board[i] = [];
+        board[row] = [];
 
-        for (let j = 0; j < SIZE; j++) {
+        for (let col = 0; col < SIZE; col++) {
 
-            const index = i * SIZE + j;
+            const index = row * SIZE + col;
 
-            const value = inputs[index].value;
-
-            board[i][j] = value ? parseInt(value) : 0;
+            board[row][col] =
+                cells[index].value === ""
+                    ? 0
+                    : parseInt(cells[index].value);
         }
     }
 
@@ -103,52 +134,71 @@ async function checkSolution() {
         body: JSON.stringify({
             board: board
         })
+
     });
 
     const data = await response.json();
 
-    const message = document.getElementById("message");
+    const message =
+        document.getElementById("message");
 
     if (data.error) {
+
         message.style.color = "red";
         message.innerText = data.error;
+
         return;
     }
 
-    const incorrect = new Set(
-        data.incorrect.map(cell => cell[0] * SIZE + cell[1])
-    );
+    const incorrect =
+        new Set(
+            data.incorrect.map(
+                cell => cell[0] * SIZE + cell[1]
+            )
+        );
 
-    inputs.forEach((input, index) => {
+    cells.forEach((cell, index) => {
 
-        if (input.disabled)
+        if (cell.disabled)
             return;
 
-        input.className = "sudoku-cell";
+        cell.className = "sudoku-cell";
 
         if (incorrect.has(index)) {
-            input.classList.add("incorrect");
+
+            cell.classList.add("incorrect");
         }
+
     });
 
     if (incorrect.size === 0) {
+
         message.style.color = "green";
-        message.innerText = "Congratulations! Puzzle solved!";
+        message.innerText =
+            "Congratulations! You solved the puzzle!";
+
     } else {
+
         message.style.color = "red";
-        message.innerText = "Some cells are incorrect.";
+        message.innerText =
+            "Some cells are incorrect.";
+
     }
 }
 
-window.addEventListener("load", () => {
+window.onload = function () {
 
     document
         .getElementById("new-game")
         .addEventListener("click", newGame);
 
     document
+        .getElementById("hint")
+        .addEventListener("click", hint);
+
+    document
         .getElementById("check-solution")
         .addEventListener("click", checkSolution);
 
     newGame();
-});
+};

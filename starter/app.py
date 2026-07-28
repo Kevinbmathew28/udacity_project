@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 import sudoku_logic
+import random
 
 app = Flask(__name__)
 
@@ -32,8 +33,40 @@ def new_game():
     })
 
 
+@app.route("/hint")
+def get_hint():
+    puzzle = CURRENT["puzzle"]
+    solution = CURRENT["solution"]
+
+    if puzzle is None or solution is None:
+        return jsonify({"error": "No active game"}), 400
+
+    empty_cells = []
+
+    for row in range(sudoku_logic.SIZE):
+        for col in range(sudoku_logic.SIZE):
+            if puzzle[row][col] == 0:
+                empty_cells.append((row, col))
+
+    if not empty_cells:
+        return jsonify({"message": "Puzzle already completed"})
+
+    row, col = random.choice(empty_cells)
+
+    value = solution[row][col]
+
+    puzzle[row][col] = value
+
+    return jsonify({
+        "row": row,
+        "col": col,
+        "value": value
+    })
+
+
 @app.route("/check", methods=["POST"])
 def check_solution():
+
     if CURRENT["solution"] is None:
         return jsonify({"error": "No game in progress"}), 400
 

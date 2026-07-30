@@ -32,8 +32,7 @@ def is_safe(board, row, col, num):
                 return False
     return True
 
-
-def find_empty(board):
+def fill_board(board):
     for row in range(SIZE):
         for col in range(SIZE):
             if board[row][col] == EMPTY:
@@ -79,42 +78,18 @@ def _count_solutions(board, limit):
 
 
 def remove_cells(board, clues):
-    positions = [(row, col) for row in range(SIZE) for col in range(SIZE)]
-    random.shuffle(positions)
     attempts = SIZE * SIZE - clues
-    removed = 0
+    while attempts > 0:
+        row = random.randrange(SIZE)
+        col = random.randrange(SIZE)
+        if board[row][col] != EMPTY:
+            board[row][col] = EMPTY
+            attempts -= 1
 
-    for row, col in positions:
-        if removed >= attempts:
-            break
-        if board[row][col] == EMPTY:
-            continue
-
-        value = board[row][col]
-        board[row][col] = EMPTY
-        if count_solutions(board) != 1:
-            board[row][col] = value
-        else:
-            removed += 1
-
-
-def get_clues_for_difficulty(difficulty='easy'):
-    normalized = (difficulty or 'easy').lower()
-    return DIFFICULTY_SETTINGS.get(normalized, DIFFICULTY_SETTINGS['easy'])
-
-
-def generate_puzzle(clues=35, difficulty='easy'):
-    if clues is None:
-        clues = get_clues_for_difficulty(difficulty)
-
+def generate_puzzle(clues=35):
     board = create_empty_board()
     fill_board(board)
     solution = deep_copy(board)
-
+    remove_cells(board, clues)
     puzzle = deep_copy(board)
-    remove_cells(puzzle, clues)
-
-    if count_solutions(puzzle) != 1:
-        return generate_puzzle(clues=clues, difficulty=difficulty)
-
     return puzzle, solution

@@ -3,12 +3,20 @@ import random
 
 SIZE = 9
 EMPTY = 0
+DIFFICULTY_SETTINGS = {
+    'easy': 40,
+    'medium': 32,
+    'hard': 24,
+}
+
 
 def deep_copy(board):
     return copy.deepcopy(board)
 
+
 def create_empty_board():
     return [[EMPTY for _ in range(SIZE)] for _ in range(SIZE)]
+
 
 def is_safe(board, row, col, num):
     # Check row and column
@@ -24,31 +32,73 @@ def is_safe(board, row, col, num):
                 return False
     return True
 
-def fill_board(board):
+
+def find_empty(board):
     for row in range(SIZE):
         for col in range(SIZE):
             if board[row][col] == EMPTY:
-                possible = list(range(1, SIZE + 1))
-                random.shuffle(possible)
-                for candidate in possible:
-                    if is_safe(board, row, col, candidate):
-                        board[row][col] = candidate
-                        if fill_board(board):
-                            return True
-                        board[row][col] = EMPTY
-                return False
-    return True
+                return row, col
+    return None, None
+
+
+def fill_board(board):
+    row, col = find_empty(board)
+    if row is None:
+        return True
+
+    possible = list(range(1, SIZE + 1))
+    random.shuffle(possible)
+    for candidate in possible:
+        if is_safe(board, row, col, candidate):
+            board[row][col] = candidate
+            if fill_board(board):
+                return True
+            board[row][col] = EMPTY
+    return False
+
+
+def count_solutions(board, limit=2):
+    board = deep_copy(board)
+    return _count_solutions(board, limit)
+
+
+def _count_solutions(board, limit):
+    row, col = find_empty(board)
+    if row is None:
+        return 1
+
+    solutions = 0
+    for candidate in range(1, SIZE + 1):
+        if is_safe(board, row, col, candidate):
+            board[row][col] = candidate
+            solutions += _count_solutions(board, limit)
+            board[row][col] = EMPTY
+            if solutions >= limit:
+                return solutions
+    return solutions
+
 
 def remove_cells(board, clues):
-    attempts = SIZE * SIZE - clues
-    while attempts > 0:
-        row = random.randrange(SIZE)
-        col = random.randrange(SIZE)
-        if board[row][col] != EMPTY:
-            board[row][col] = EMPTY
-            attempts -= 1
+    positions = [(r, c) for r in range(SIZE) for c in range(SIZE)]
+    random.shuffle(positions)
+    removed = 0
 
-def generate_puzzle(clues=35):
+    while removed < SIZE * SIZE - clues and positions:
+        row, col = positions.pop()
+        if board[row][col] == EMPTY:
+            continue
+
+        backup = board[row][col]
+        board[row][col] = EMPTY
+
+        if count_solutions(board, limit=2) != 1:
+            board[row][col] = backup
+        else:
+            removed += 1
+
+def generate_puzzle(clues=None, difficulty='easy'):
+    if clues is None:
+        clues = DIFFICULTY_SETTINGS.get(difficulty, DIFFICULTY_SETTINGS['easy'])
     board = create_empty_board()
     fill_board(board)
     solution = deep_copy(board)

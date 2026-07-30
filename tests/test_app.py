@@ -88,6 +88,29 @@ def test_new_game_accepts_difficulty_parameter(client):
     assert response.get_json()["difficulty"] == "hard"
 
 
+def test_difficulty_changes_puzzle_clues(client):
+    easy_response = client.get("/new?difficulty=easy")
+    medium_response = client.get("/new?difficulty=medium")
+    hard_response = client.get("/new?difficulty=hard")
+
+    assert easy_response.status_code == 200
+    assert medium_response.status_code == 200
+    assert hard_response.status_code == 200
+
+    easy_puzzle = easy_response.get_json()["puzzle"]
+    medium_puzzle = medium_response.get_json()["puzzle"]
+    hard_puzzle = hard_response.get_json()["puzzle"]
+
+    easy_clues = sum(1 for row in easy_puzzle for value in row if value != 0)
+    medium_clues = sum(1 for row in medium_puzzle for value in row if value != 0)
+    hard_clues = sum(1 for row in hard_puzzle for value in row if value != 0)
+
+    assert easy_clues == sudoku_app.sudoku_logic.DIFFICULTY_SETTINGS["easy"]
+    assert medium_clues == sudoku_app.sudoku_logic.DIFFICULTY_SETTINGS["medium"]
+    assert hard_clues == sudoku_app.sudoku_logic.DIFFICULTY_SETTINGS["hard"]
+    assert easy_clues > medium_clues > hard_clues
+
+
 def test_generate_puzzle_returns_a_uniquely_solved_board():
     puzzle, solution = sudoku_app.sudoku_logic.generate_puzzle(clues=30, difficulty="hard")
 

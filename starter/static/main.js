@@ -8,6 +8,7 @@ let timerInterval = null;
 let elapsedSeconds = 0;
 let gameCompleted = false;
 let solution = [];
+let hintsUsed = 0;
 
 function formatTime(totalSeconds) {
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
@@ -48,6 +49,7 @@ function stopTimer() {
 function startTimer() {
   stopTimer();
   elapsedSeconds = 0;
+  hintsUsed = 0;
   updateTimerDisplay();
   gameCompleted = false;
   timerInterval = setInterval(() => {
@@ -100,6 +102,7 @@ function saveScore(timeSeconds, difficulty) {
     name: getPlayerName(),
     timeSeconds,
     difficulty,
+    hintsUsed,
     completedAt: new Date().toISOString()
   };
 
@@ -128,7 +131,8 @@ function renderScoreboard(scores = loadScores()) {
 
   scores.forEach((score, index) => {
     const item = document.createElement('li');
-    item.textContent = `${index + 1}. ${score.name} - ${formatTime(score.timeSeconds)} (${score.difficulty})`;
+    const hints = score.hintsUsed != null ? score.hintsUsed : 0;
+    item.textContent = `${index + 1}. ${score.name} - ${formatTime(score.timeSeconds)} (${score.difficulty}) - Hints: ${hints}`;
     scoreboardList.appendChild(item);
   });
 }
@@ -311,6 +315,7 @@ function applyHint() {
       inp.value = correctValue;
       inp.disabled = true;
       inp.className = 'sudoku-cell prefilled';
+      hintsUsed += 1;
       break;
     }
   }

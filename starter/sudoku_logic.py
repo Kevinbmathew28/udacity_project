@@ -96,7 +96,9 @@ def remove_cells(board, clues):
         else:
             removed += 1
 
-def generate_puzzle(clues=35):
+def generate_puzzle(clues=None, difficulty='easy'):
+    if clues is None:
+        clues = DIFFICULTY_SETTINGS.get(difficulty, DIFFICULTY_SETTINGS['easy'])
     board = create_empty_board()
     fill_board(board)
     solution = deep_copy(board)

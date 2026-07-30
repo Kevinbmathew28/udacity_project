@@ -42,20 +42,24 @@ body {
     color: var(--text-color);
     text-align: center;
     margin: 0;
-    padding: 0;
+    padding: 16px;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
 h1 {
-    margin-top: 30px;
+    margin-top: 16px;
     color: var(--text-color);
+    font-size: clamp(1.5rem, 2.2vw, 2.2rem);
 }
 
 #sudoku-board {
     display: inline-block;
-    margin: 30px auto;
+    margin: 24px auto;
     border: 4px solid var(--board-border);
     background: var(--board-bg);
     box-shadow: 0 2px 8px var(--shadow);
+    width: min(100%, 420px);
 }
 
 .sudoku-row {
@@ -63,15 +67,16 @@ h1 {
 }
 
 .sudoku-cell {
-    width: 40px;
-    height: 40px;
+    width: min(max(32px, 4vw), 48px);
+    height: min(max(32px, 4vw), 48px);
     border: 1px solid var(--cell-border);
     text-align: center;
-    font-size: 20px;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
     outline: none;
     background: var(--cell-bg);
     color: var(--text-color);
     transition: background 0.2s;
+    box-sizing: border-box;
 }
 
 .sudoku-row:nth-child(1) .sudoku-cell:nth-child(1),
@@ -182,7 +187,7 @@ button:hover {
 
 #message {
     margin-left: 20px;
-    font-size: 16px;
+    font-size: 1rem;
     color: #d32f2f;
 }
 
@@ -191,9 +196,67 @@ button:hover {
 }
 
 input, select {
-    padding: 6px 8px;
+    padding: 8px 10px;
     border-radius: 4px;
     border: 1px solid var(--cell-border);
     background: var(--cell-bg);
     color: var(--text-color);
+    font-size: 1rem;
+}
+
+@media (max-width: 760px) {
+    body {
+        padding: 12px;
+    }
+
+    .controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        align-items: center;
+        justify-items: center;
+    }
+
+    .controls button,
+    .controls select,
+    .controls input {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    #message {
+        margin-left: 0;
+        margin-top: 8px;
+        text-align: center;
+    }
+
+    #timer {
+        display: block;
+        margin-top: 8px;
+    }
+}
+
+@media (max-width: 520px) {
+    #sudoku-board {
+        width: 100%;
+    }
+
+    .sudoku-cell {
+        width: calc((100vw - 56px) / 9);
+        height: calc((100vw - 56px) / 9);
+        max-width: 44px;
+        max-height: 44px;
+    }
+
+    .controls {
+        grid-template-columns: 1fr;
+    }
+
+    button,
+    select,
+    input {
+        font-size: 0.95rem;
+        padding: 10px;
+    }
 }

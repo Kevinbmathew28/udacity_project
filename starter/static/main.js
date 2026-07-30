@@ -72,6 +72,7 @@ function createBoardElement() {
       input.addEventListener('input', (e) => {
         const val = e.target.value.replace(/[^1-9]/g, '');
         e.target.value = val;
+        updateLiveCellHighlighting();
       });
       rowDiv.appendChild(input);
     }
@@ -228,6 +229,67 @@ function highlightIncorrectCells(incorrectIndexes) {
 
     if (incorrectIndexes.has(idx) || isEmpty || isWrong) {
       inp.classList.add('incorrect');
+    }
+  }
+}
+
+function updateLiveCellHighlighting() {
+  const boardDiv = document.getElementById('sudoku-board');
+  const inputs = boardDiv.getElementsByTagName('input');
+  const conflictIndexes = new Set();
+
+  for (let idx = 0; idx < inputs.length; idx++) {
+    const inp = inputs[idx];
+    if (inp.disabled) {
+      continue;
+    }
+
+    const row = Number(inp.dataset.row);
+    const col = Number(inp.dataset.col);
+    const value = inp.value;
+    if (value === '') {
+      continue;
+    }
+
+    for (let checkCol = 0; checkCol < SIZE; checkCol++) {
+      const otherIdx = row * SIZE + checkCol;
+      if (otherIdx !== idx && inputs[otherIdx].value === value) {
+        conflictIndexes.add(idx);
+        conflictIndexes.add(otherIdx);
+      }
+    }
+
+    for (let checkRow = 0; checkRow < SIZE; checkRow++) {
+      const otherIdx = checkRow * SIZE + col;
+      if (otherIdx !== idx && inputs[otherIdx].value === value) {
+        conflictIndexes.add(idx);
+        conflictIndexes.add(otherIdx);
+      }
+    }
+
+    const startRow = Math.floor(row / 3) * 3;
+    const startCol = Math.floor(col / 3) * 3;
+    for (let r = startRow; r < startRow + 3; r++) {
+      for (let c = startCol; c < startCol + 3; c++) {
+        const otherIdx = r * SIZE + c;
+        if (otherIdx !== idx && inputs[otherIdx].value === value) {
+          conflictIndexes.add(idx);
+          conflictIndexes.add(otherIdx);
+        }
+      }
+    }
+  }
+
+  for (let idx = 0; idx < inputs.length; idx++) {
+    const inp = inputs[idx];
+    if (inp.disabled) {
+      continue;
+    }
+
+    if (conflictIndexes.has(idx)) {
+      inp.classList.add('incorrect');
+    } else {
+      inp.classList.remove('incorrect');
     }
   }
 }

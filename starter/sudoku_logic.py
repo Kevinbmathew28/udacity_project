@@ -32,7 +32,8 @@ def is_safe(board, row, col, num):
                 return False
     return True
 
-def fill_board(board):
+
+def find_empty(board):
     for row in range(SIZE):
         for col in range(SIZE):
             if board[row][col] == EMPTY:
@@ -78,13 +79,22 @@ def _count_solutions(board, limit):
 
 
 def remove_cells(board, clues):
-    attempts = SIZE * SIZE - clues
-    while attempts > 0:
-        row = random.randrange(SIZE)
-        col = random.randrange(SIZE)
-        if board[row][col] != EMPTY:
-            board[row][col] = EMPTY
-            attempts -= 1
+    positions = [(r, c) for r in range(SIZE) for c in range(SIZE)]
+    random.shuffle(positions)
+    removed = 0
+
+    while removed < SIZE * SIZE - clues and positions:
+        row, col = positions.pop()
+        if board[row][col] == EMPTY:
+            continue
+
+        backup = board[row][col]
+        board[row][col] = EMPTY
+
+        if count_solutions(board, limit=2) != 1:
+            board[row][col] = backup
+        else:
+            removed += 1
 
 def generate_puzzle(clues=35):
     board = create_empty_board()

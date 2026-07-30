@@ -146,6 +146,8 @@ h1 {
 
 .sudoku-cell.incorrect {
     background: var(--cell-incorrect-bg);
+    border-color: #d32f2f;
+    color: #7f1d1d;
 }
 
 .sudoku-cell:nth-child(3),

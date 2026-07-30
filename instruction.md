@@ -1,109 +1,167 @@
-# Sudoku Flask Project Instructions
+# GitHub Copilot Instructions for Sudoku Application
 
 ## Project Overview
-This is a simple Sudoku web application built with Python and Flask, with a vanilla JavaScript frontend and CSS styling. The app generates Sudoku puzzles on the server, renders a 9x9 grid in the browser, and allows users to fill the board and check their solution.
+This repository contains a modern 9×9 Sudoku web application built with Flask for the Python backend and vanilla JavaScript/CSS for the frontend. The application should feel accessible, responsive, and easy to extend while keeping the core architecture clean and modular.
 
-The basic flow is:
-- Flask serves `index.html` and exposes API endpoints at `/new` and `/check`
-- `sudoku_logic.py` generates a completed Sudoku board and removes cells to create a puzzle
-- `main.js` renders the board, handles user input, and sends board state back to the backend for validation
+The application should:
+- generate Sudoku puzzles on the backend in `starter/sudoku_logic.py`
+- serve the game UI from `starter/templates/index.html`
+- manage game state and validation through `starter/static/main.js`
+- style the board and interaction states in `starter/static/styles.css`
+- keep the backend lightweight with Flask and minimal dependencies
 
-The project should remain simple, maintainable, and easy to extend with features like difficulty selection, timers, and leaderboards.
+## Code Standards and Architecture
 
-## Backend Coding Guidelines (Flask / Python)
-- Keep backend logic in `starter/app.py` and Sudoku generation in `starter/sudoku_logic.py`.
-- Use Flask routes for JSON APIs only; keep frontend rendering in the browser.
-- Keep route handlers small and focused:
-  - `/` should serve the main HTML page with `render_template`
-  - `/new` should generate a new board and return a JSON puzzle
-  - `/check` should compare submitted board state against the stored solution and return incorrect coordinates
-- Store current puzzle and solution in a simple in-memory structure only for the running session.
-- Do not expose the solution to the client.
-- Validate input on the backend in the `/check` route before using it.
-- Use `jsonify` for responses and return proper HTTP status codes for errors.
-- Keep dependency usage minimal: only Flask is required.
+### Refactor Legacy Code to Modern Standards
+- Use a modular architecture:
+  - keep backend routes and API handling in `starter/app.py`
+  - keep Sudoku generation and solving logic in `starter/sudoku_logic.py`
+  - keep rendering and browser interactions in `starter/static/main.js`
+  - keep styling in `starter/static/styles.css`
+- Prefer small, single-purpose functions and avoid large monolithic blocks.
+- Keep Python functions testable and avoid side effects where possible.
+- In JavaScript, organize logic into reusable helper functions.
+- Use comments to explain:
+  - non-trivial business logic
+  - puzzle generation and solving strategies
+  - API input/output expectations
+- **Error Handling**: Implement consistent error handling patterns
+  - Use try/catch blocks for async operations
+  - Validate user inputs at boundaries
+  - Provide meaningful error messages to users
+  - Log errors appropriately for debugging
 
-## Frontend Guidelines (HTML / CSS / JavaScript)
-- Keep `starter/templates/index.html` simple and semantic.
-- Use `starter/static/styles.css` for layout and visual state styling.
-- Use `starter/static/main.js` to:
-  - create the 9x9 board DOM programmatically
-  - render received puzzle values
-  - sanitize user input so only digits 1-9 are allowed
-  - handle the `New Game` and `Check Solution` buttons
-  - send fetch requests to `/new` and `/check`
-  - show user feedback for invalid entries, success, or errors
-- Prefilled puzzle cells should be disabled and styled differently from editable cells.
-- Highlight incorrect cells after a validation check.
-- Keep frontend logic contained in small helper functions for readability.
+### Error Handling
+- Validate all user input at boundary points.
+- Use `try/catch` for async operations in JavaScript.
+- Return clean JSON error responses from Flask, and use HTTP 400 for bad client requests.
+- Show user-facing messages for invalid board submission, network errors, and unexpected backend failures.
+- Do not crash the app on malformed input.
 
-## Sudoku Logic Guidelines (Generation, Solving, Uniqueness)
-- Use a backtracking solver to generate a complete valid Sudoku solution.
-- Fill the board in random order so puzzle generation is not deterministic.
-- After generating the full board, remove cells to create the puzzle.
-- Enforce unique-solution puzzles by verifying uniqueness during removal:
-  - temporarily blank a candidate cell
-  - run a solver that counts valid completions up to 2
-  - restore the cell if the board has more than one valid solution
-- Keep puzzle generation fast enough for interactive use, but prioritize correctness.
-- Clearly separate the following responsibilities:
-  - board creation and representation
-  - safety checks (`row`, `column`, `3x3 box`)
-  - board filling
-  - solution counting and uniqueness checking
-- Keep `generate_puzzle()` returning both the puzzle and the complete solution.
-- Avoid storing the solution on the frontend or returning it in API payloads.
+### Build & Run Requirements
+- The application must install cleanly with `pip install -r requirements.txt`.
+- It must run via `python app.py` or `flask run` without startup errors.
+- Browser developer tools should show no console errors for normal usage.
 
-## Testing Guidelines
-- Add unit tests for Sudoku generation and validation in `starter/sudoku_logic.py`.
-- Test that generated boards are valid Sudoku solutions.
-- Test that puzzle boards do not violate row/column/box constraints.
-- Test solver behavior for both solvability and uniqueness counting.
-- Add tests for Flask routes if possible by using the Flask test client.
-- Validate that `/new` returns a 9x9 board and that `/check` returns the correct incorrect positions.
-- Keep tests focused, deterministic, and easy to run.
-- Use clear, descriptive test names.
+## User Interface Requirements
 
-## Code Quality Standards
-- Follow consistent naming and formatting.
-- Keep functions short, with one clear purpose each.
-- Add comments only where necessary to explain non-obvious logic.
-- Prefer explicit structure over clever shortcuts.
-- Avoid duplicate logic between backend and frontend.
-- Keep the Python code readable and idiomatic.
-- Use helper functions for repeated tasks like board traversal and validation.
+### Responsive and Accessible Design
+- Use plain CSS only; do not add framework dependencies.
+- Ensure the Sudoku board is responsive and mobile-friendly.
+- Keep the grid centered and proportional on all screen sizes.
+- Use `em` or responsive units for scalable typography.
+- Use minimum touch target sizes of about 44×44px for buttons on mobile.
+- Avoid layout shifts while the board loads or updates.
+
+### 3×3 Grid Styling
+- Visually distinguish 3×3 sub-grids with alternating background shades or stronger borders.
+- Keep the grid easy to scan and readable.
+- Prefilled cells should look different from editable cells.
+
+### Dark Mode Support
+- Implement a light/dark theme toggle.
+- Persist the user theme preference in `localStorage`.
+- Ensure text and interactive controls maintain at least WCAG AA contrast.
+
+### Keyboard & Accessibility
+- Use semantic HTML and accessible ARIA roles as needed.
+- All interactive UI elements must be keyboard accessible.
+- Implement arrow-key navigation between cells and Enter to confirm input when appropriate.
+- Provide visible focus indicators.
+- For screen readers, label cells with row/column context and state, such as "Row 1, Column 2, empty" or "Row 1, Column 2, prefilled 5".
+- Provide announcements or status text for errors, hints, and completion.
+- Do not rely on color alone; use text or icons for invalid state and completion feedback.
+
+## Core Sudoku Logic
+
+### Puzzle Generation
+- Generate puzzles with exactly one valid solution.
+- Create a fully solved 9×9 board first, then remove cells while preserving uniqueness.
+- Use backtracking and/or constraint propagation for both generation and uniqueness checking.
+- Keep generation randomized so repeated plays are not the same.
+- Control difficulty by the number of filled cells:
+  - Easy: 40-45 prefilled cells
+  - Medium: 30-35 prefilled cells
+  - Hard: 25-28 prefilled cells
+- Prefilled cells must be immutable in the UI.
+
+### Unique Solution Checking
+- When removing a cell, verify that the board still has only one solution.
+- Implement a solver that counts up to 2 possible completions and stops early once multiple solutions are found.
+- Reject removals that cause a second valid solution.
+- Maintain the solution only on the server side.
+
+### Validation and Feedback
+- Validate the board in real time as the user enters numbers:
+  - row constraint
+  - column constraint
+  - 3×3 sub-grid constraint
+- Highlight conflicting cells with a clear visual style.
+- If a user submits the board, return detailed validation results rather than just success/failure.
+- Detect completion when all cells are filled and valid.
+- Show a success modal or message with completion statistics.
+
+## Interactive Features
+
+### Core Game Interactions
+- Implement a working Hint feature:
+  - reveal one correct number in an empty cell
+  - mark the hinted cell as locked/prefilled
+  - count hints separately for scoring
+- Implement a Check button that validates the current board against the solution and reports incorrect cells.
+- Provide user-friendly feedback for each action.
+- Ensure the board remains playable while validation is happening.
+
+### Timer
+- Start timing when a new puzzle loads or when the first cell is edited.
+- Display elapsed time in MM:SS.
+- Stop the timer on puzzle completion.
+- Optionally pause the timer when the user navigates away or switches tabs.
+
+## Advanced Features
+
+### Number Tracking Visualization
+- Display the usage count of each digit (1-9) on the board.
+- Show which numbers are complete and how many remain.
+- Allow users to tap/click a number to highlight all board instances.
+- Use text/icons so the feature remains accessible.
+
+### Note Mode
+- Provide a toggle or shortcut to enter note mode.
+- In note mode, typed digits should add pencil marks to the selected cell.
+- Allow multiple candidate notes in one cell.
+- Clear notes when the user enters a final number.
+- Display notes in smaller or superscript text.
+- Indicate note mode visibly in the UI.
+
+## Testing and Quality
+- Add unit tests for Sudoku generation and validation in `tests/`.
+- Test that generated boards are valid and puzzles follow Sudoku rules.
+- Test that uniqueness checking rejects ambiguous boards.
+- Add tests for Flask route behavior and JSON API responses.
+- Keep tests deterministic and easy to run.
+- Use descriptive test case names and document expected behavior.
 
 ## Error Handling Practices
-- Handle invalid user input gracefully on both frontend and backend.
-- On the frontend:
-  - prevent users from typing non-numeric characters
-  - display meaningful error messages in the UI area
-- On the backend:
-  - validate incoming JSON payloads in `/check`
-  - return useful error objects like `{ "error": "No game in progress" }`
-  - use HTTP 400 for client errors
-- Keep the client-side error display simple and visible.
-- Avoid app crashes caused by malformed requests.
+- Validate all inputs before use.
+- Ensure the backend returns clear JSON errors for invalid requests.
+- Handle network failures gracefully on the frontend.
+- Display friendly error messages in the UI.
+- Avoid showing raw exception details to the user.
+- Use consistent message styling for success, warning, and error states.
 
-## Suggested Future Features
-- Add difficulty selection to the UI and pass the clue count to `/new`.
-- Add a timer that tracks elapsed solving time.
-- Add scoring based on time, difficulty, and mistakes.
-- Store top scores or leaderboards in local storage or optionally on a backend.
-- Add a hint system that reveals one correct digit.
-- Add input validation that highlights row/column/box conflicts as the user types.
-- Add a restart button that resets the current puzzle state.
-- Add mobile responsiveness and keyboard navigation for better usability.
-- Add a persistent scoreboard or history store.
+## Future Features and Improvements
+- Add difficulty selection to the UI and persist the selected difficulty.
+- Add a local leaderboard stored in `localStorage`.
+- Add a theme toggle and save preference persistently.
+- Add puzzle stats like best time, shortest completion, and hint usage.
+- Add an undo/redo feature for cell entry.
+- Add keyboard shortcuts for note mode, check, hint, and new game.
 
-## General Guidance for Copilot Suggestions
-- Prefer clear, modular code that fits the existing Flask + JS structure.
-- Suggest changes that improve correctness first, then usability.
-- Avoid adding unnecessary dependencies.
-- Propose backend changes in `starter/app.py` and `starter/sudoku_logic.py` when solving logic or API behavior is involved.
-- Propose frontend changes in `starter/static/main.js`, `starter/static/styles.css`, and `starter/templates/index.html` when improving the UI.
-- Keep Copilot suggestions aligned with a minimal, maintainable Flask application design.
-
----
-
-These instructions are designed to help GitHub Copilot suggest changes that match the current Sudoku project structure and goals.
+## Copilot Suggestion Guidance
+- Keep changes aligned with the existing Flask + vanilla JS architecture.
+- Avoid introducing heavy frontend frameworks or unnecessary dependencies.
+- Prefer simple, maintainable solutions.
+- Suggest backend improvements in `starter/app.py` and `starter/sudoku_logic.py`.
+- Suggest frontend improvements in `starter/static/main.js`, `starter/static/styles.css`, and `starter/templates/index.html`.
+- Focus on accessibility, responsive behavior, and game correctness.

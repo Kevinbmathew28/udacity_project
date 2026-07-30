@@ -15,6 +15,22 @@ function formatTime(totalSeconds) {
   return `${minutes}:${seconds}`;
 }
 
+function showMessage(text, type = 'info') {
+  const msg = document.getElementById('message');
+  if (!msg) {
+    return;
+  }
+
+  msg.textContent = text;
+  if (type === 'error') {
+    msg.style.color = '#d32f2f';
+  } else if (type === 'success') {
+    msg.style.color = '#388e3c';
+  } else {
+    msg.style.color = '#333';
+  }
+}
+
 function updateTimerDisplay() {
   const timerElement = document.getElementById('timer');
   if (timerElement) {
@@ -155,14 +171,24 @@ function renderPuzzle(puz, solvedBoard = null) {
 
 async function newGame() {
   startTimer();
-  const res = await fetch(`/new?difficulty=${encodeURIComponent(currentDifficulty)}`);
-  const data = await res.json();
-  if (data.difficulty) {
-    currentDifficulty = data.difficulty;
-    document.getElementById('difficulty').value = currentDifficulty;
+  try {
+    const res = await fetch(`/new?difficulty=${encodeURIComponent(currentDifficulty)}`);
+    if (!res.ok) {
+      const data = await res.json();
+      showMessage(data.error || 'Unable to start a new game.', 'error');
+      return;
+    }
+    const data = await res.json();
+    if (data.difficulty) {
+      currentDifficulty = data.difficulty;
+      document.getElementById('difficulty').value = currentDifficulty;
+    }
+    renderPuzzle(data.puzzle, data.solution);
+    showMessage('New game started. Good luck!', 'info');
+  } catch (error) {
+    console.error('New game failed:', error);
+    showMessage('Unable to start a new game. Check your connection.', 'error');
   }
-  renderPuzzle(data.puzzle, data.solution);
-  document.getElementById('message').innerText = '';
 }
 
 function getBoardFromInputs() {
@@ -185,10 +211,23 @@ function highlightIncorrectCells(incorrectIndexes) {
   const inputs = boardDiv.getElementsByTagName('input');
   for (let idx = 0; idx < inputs.length; idx++) {
     const inp = inputs[idx];
-    if (inp.disabled) continue;
     inp.className = 'sudoku-cell';
-    if (incorrectIndexes.has(idx)) {
-      inp.className = 'sudoku-cell incorrect';
+
+    if (inp.disabled) {
+      inp.classList.add('prefilled');
+      continue;
+    }
+
+    const row = Number(inp.dataset.row);
+    const col = Number(inp.dataset.col);
+    const cellValue = inp.value;
+    const expectedValue = solution?.[row]?.[col];
+
+    const isEmpty = cellValue === '';
+    const isWrong = cellValue !== '' && expectedValue !== undefined && cellValue !== String(expectedValue);
+
+    if (incorrectIndexes.has(idx) || isEmpty || isWrong) {
+      inp.classList.add('incorrect');
     }
   }
 }
@@ -217,29 +256,36 @@ function applyHint() {
 
 async function checkSolution() {
   const board = getBoardFromInputs();
-  const res = await fetch('/check', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({board})
-  });
-  const data = await res.json();
   const msg = document.getElementById('message');
-  if (data.error) {
-    msg.style.color = '#d32f2f';
-    msg.innerText = data.error;
-    return;
-  }
-  const incorrect = new Set(data.incorrect.map(x => x[0]*SIZE + x[1]));
-  highlightIncorrectCells(incorrect);
-  if (incorrect.size === 0) {
-    gameCompleted = true;
-    stopTimer();
-    saveScore(elapsedSeconds, currentDifficulty);
-    msg.style.color = '#388e3c';
-    msg.innerText = `Congratulations! You solved it in ${formatTime(elapsedSeconds)}.`;
-  } else {
-    msg.style.color = '#d32f2f';
-    msg.innerText = 'Some cells are incorrect.';
+
+  try {
+    const res = await fetch('/check', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({board})
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      showMessage(data.error || 'Unable to check the board.', 'error');
+      return;
+    }
+
+    const data = await res.json();
+    const incorrect = new Set(data.incorrect.map(x => x[0]*SIZE + x[1]));
+    highlightIncorrectCells(incorrect);
+
+    if (incorrect.size === 0) {
+      gameCompleted = true;
+      stopTimer();
+      saveScore(elapsedSeconds, currentDifficulty);
+      showMessage(`Congratulations! You solved it in ${formatTime(elapsedSeconds)}.`, 'success');
+    } else {
+      showMessage('Some cells are incorrect. Please fix the highlighted fields.', 'error');
+    }
+  } catch (error) {
+    console.error('Check solution failed:', error);
+    showMessage('Network error while checking the board. Please try again.', 'error');
   }
 }
 

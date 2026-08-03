@@ -244,12 +244,65 @@ async function checkSolution() {
   validateBoardConflicts();
 }
 
+async function checkPuzzle() {
+  // similar to checkSolution but only highlights incorrect cells and leaves correct entries untouched
+  const boardDiv = document.getElementById('sudoku-board');
+  const inputs = boardDiv.getElementsByTagName('input');
+  const board = [];
+  for (let r = 0; r < SIZE; r++) {
+    board.push([]);
+    for (let c = 0; c < SIZE; c++) {
+      const idx = r * SIZE + c;
+      const v = inputs[idx].value;
+      board[r].push(v === '' ? 0 : parseInt(v, 10));
+    }
+  }
+
+  const res = await fetch('/check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ board })
+  });
+  const data = await res.json();
+  const msg = document.getElementById('message');
+  if (!msg) return;
+
+  if (data.error) {
+    msg.style.color = '#d32f2f';
+    msg.innerText = data.error;
+    return;
+  }
+
+  // remove previous incorrect highlights
+  for (let i = 0; i < inputs.length; i++) {
+    inputs[i].classList.remove('incorrect');
+  }
+
+  const incorrect = data.incorrect || [];
+  incorrect.forEach(([r, c]) => {
+    const idx = r * SIZE + c;
+    const inp = inputs[idx];
+    if (inp && !inp.disabled) inp.classList.add('incorrect');
+  });
+
+  // update message but do not stop timer or mark correct cells
+  if (incorrect.length === 0) {
+    msg.style.color = '#388e3c';
+    msg.innerText = 'No incorrect cells found.';
+  } else {
+    msg.style.color = '#d32f2f';
+    msg.innerText = `${incorrect.length} incorrect cell(s) highlighted.`;
+  }
+}
+
 // Wire buttons
 window.addEventListener('load', () => {
   const ng = document.getElementById('new-game');
   if (ng) ng.addEventListener('click', (e) => { e.preventDefault(); newGame(); });
   const cs = document.getElementById('check-solution');
   if (cs) cs.addEventListener('click', (e) => { e.preventDefault(); checkSolution(); });
+  const cp = document.getElementById('check-puzzle');
+  if (cp) cp.addEventListener('click', (e) => { e.preventDefault(); checkPuzzle(); });
   // initialize timer display
   _updateTimerDisplay();
 });

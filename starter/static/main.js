@@ -7,6 +7,10 @@ let _timerInterval = null;
 let _timerStart = null; // timestamp when timer started
 let _elapsedBefore = 0;  // ms accumulated before current run
 
+// Game state for leaderboard/hints
+let currentDifficulty = 'medium';
+let hintsUsed = 0;
+
 function _formatTime(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -177,11 +181,18 @@ function renderPuzzle(puz) {
 }
 
 async function newGame() {
-  const res = await fetch('/new');
+  const diffSel = document.getElementById('difficulty-select');
+  const diff = diffSel ? diffSel.value : 'medium';
+  const res = await fetch(`/new?difficulty=${encodeURIComponent(diff)}`);
   const data = await res.json();
   renderPuzzle(data.puzzle);
   const msg = document.getElementById('message');
   if (msg) msg.innerText = '';
+  // initialize game-level state
+  currentDifficulty = data.difficulty || diff;
+  hintsUsed = 0;
+  // update leaderboard display
+  updateLeaderboardUI();
 }
 
 async function checkSolution() {
@@ -235,6 +246,12 @@ async function checkSolution() {
     msg.style.color = '#388e3c';
     const timeStr = document.getElementById('timer') ? document.getElementById('timer').innerText : '';
     msg.innerText = `Congratulations! You solved it in ${timeStr}!`;
+
+    // Prompt for player name and save leaderboard entry
+    const name = window.prompt('Enter your name for the leaderboard:', 'Player') || 'Anonymous';
+    const timeMs = _elapsedBefore; // stopTimer already accumulated elapsed
+    saveScore({ name, timeMs, difficulty: currentDifficulty, hints: hintsUsed });
+    updateLeaderboardUI();
   } else {
     msg.style.color = '#d32f2f';
     msg.innerText = 'Some cells are incorrect.';
@@ -295,6 +312,79 @@ async function checkPuzzle() {
   }
 }
 
+function applyHintToDOM(row, col, value) {
+  const boardDiv = document.getElementById('sudoku-board');
+  if (!boardDiv) return;
+  const inputs = boardDiv.getElementsByTagName('input');
+  const idx = row * SIZE + col;
+  const inp = inputs[idx];
+  if (!inp) return;
+  inp.value = String(value);
+  inp.disabled = true;
+  inp.classList.remove('invalid', 'conflict', 'filled', 'incorrect');
+  inp.classList.add('hint');
+}
+
+async function requestHint() {
+  const res = await fetch('/hint', { method: 'GET' });
+  const data = await res.json();
+  const msg = document.getElementById('message');
+  if (!msg) return;
+
+  if (data.error) {
+    msg.style.color = '#d32f2f';
+    msg.innerText = data.error;
+    return;
+  }
+
+  applyHintToDOM(data.row, data.col, data.value);
+  hintsUsed = (hintsUsed || 0) + 1;
+  msg.style.color = '#0288d1';
+  msg.innerText = 'Hint applied.';
+}
+
+// Leaderboard: localStorage key
+const LB_KEY = 'sudoku_leaderboard_v1';
+
+function loadLeaderboard() {
+  try {
+    const raw = localStorage.getItem(LB_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr;
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveLeaderboard(arr) {
+  localStorage.setItem(LB_KEY, JSON.stringify(arr));
+}
+
+function saveScore(entry) {
+  // entry: {name, timeMs, difficulty, hints}
+  const arr = loadLeaderboard();
+  arr.push(entry);
+  // sort ascending by timeMs
+  arr.sort((a, b) => a.timeMs - b.timeMs);
+  // keep top 10
+  const top = arr.slice(0, 10);
+  saveLeaderboard(top);
+}
+
+function updateLeaderboardUI() {
+  const list = document.getElementById('leaderboard-list');
+  if (!list) return;
+  const arr = loadLeaderboard();
+  list.innerHTML = '';
+  arr.forEach((e) => {
+    const li = document.createElement('li');
+    li.innerText = `${e.name} — ${_formatTime(e.timeMs)} — ${e.difficulty} — hints: ${e.hints}`;
+    list.appendChild(li);
+  });
+}
+
 // Wire buttons
 window.addEventListener('load', () => {
   const ng = document.getElementById('new-game');
@@ -303,6 +393,9 @@ window.addEventListener('load', () => {
   if (cs) cs.addEventListener('click', (e) => { e.preventDefault(); checkSolution(); });
   const cp = document.getElementById('check-puzzle');
   if (cp) cp.addEventListener('click', (e) => { e.preventDefault(); checkPuzzle(); });
-  // initialize timer display
+  const hintBtn = document.getElementById('hint-button');
+  if (hintBtn) hintBtn.addEventListener('click', (e) => { e.preventDefault(); requestHint(); });
+  // initialize timer display and leaderboard
   _updateTimerDisplay();
+  updateLeaderboardUI();
 });

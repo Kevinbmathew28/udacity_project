@@ -14,3 +14,5 @@
 .controls { margin-top: 12px; }
 #timer { margin-left: 12px; font-weight: bold; }
 #message { margin-left: 12px; }
+#leaderboard { margin-top: 18px; max-width: 420px; }
+#leaderboard-list { padding-left: 20px; }

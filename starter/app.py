@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request
+import random
 from sudoku import logic as sudoku_logic
 
 app = Flask(__name__)
@@ -74,6 +75,25 @@ def check_solution():
             if bval != solution[i][j]:
                 incorrect.append([i, j])
     return jsonify({'incorrect': incorrect})
+
+@app.route('/hint')
+def hint():
+    """Provide a single correct hint: fill one of the empty cells and lock it."""
+    puzzle = CURRENT.get('puzzle')
+    solution = CURRENT.get('solution')
+    if puzzle is None or solution is None:
+        return jsonify({'error': 'No game in progress'}), 400
+
+    # find empty cells
+    empties = [(r, c) for r in range(len(puzzle)) for c in range(len(puzzle[0])) if puzzle[r][c] == 0]
+    if not empties:
+        return jsonify({'error': 'No empty cells remaining'}), 400
+
+    r, c = random.choice(empties)
+    val = solution[r][c]
+    # update stored puzzle so future hints don't repeat same cell
+    CURRENT['puzzle'][r][c] = val
+    return jsonify({'row': r, 'col': c, 'value': val})
 
 if __name__ == '__main__':
     app.run(debug=True)

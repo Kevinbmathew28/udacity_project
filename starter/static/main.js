@@ -67,6 +67,70 @@ function createBoardElement() {
   return boardDiv;
 }
 
+function _isDigitOneToNine(ch) {
+  const n = parseInt(ch, 10);
+  return !Number.isNaN(n) && n >= 1 && n <= 9;
+}
+
+function validateBoardConflicts() {
+  // Build maps of seen values to list of input indices per row/col/box
+  const boardDiv = document.getElementById('sudoku-board');
+  if (!boardDiv) return;
+  const inputs = boardDiv.getElementsByTagName('input');
+
+  // structures: rowVals[row][value] = [indices]
+  const rowVals = Array.from({ length: SIZE }, () => ({}));
+  const colVals = Array.from({ length: SIZE }, () => ({}));
+  const boxVals = Array.from({ length: SIZE }, () => ({}));
+
+  // first pass: collect values and mark syntactic invalids
+  for (let idx = 0; idx < inputs.length; idx++) {
+    const inp = inputs[idx];
+    if (inp.disabled) continue; // prefilled cells are assumed valid
+    const r = parseInt(inp.dataset.row, 10);
+    const c = parseInt(inp.dataset.col, 10);
+    const val = inp.value.trim();
+
+    // reset classes except prefilled
+    inp.classList.remove('invalid');
+    inp.classList.remove('conflict');
+
+    if (val === '') continue;
+    if (!_isDigitOneToNine(val)) {
+      // syntactic invalid (not 1-9)
+      inp.classList.add('invalid');
+      continue;
+    }
+    const n = val;
+    // row
+    rowVals[r][n] = rowVals[r][n] || [];
+    rowVals[r][n].push(idx);
+    // col
+    colVals[c][n] = colVals[c][n] || [];
+    colVals[c][n].push(idx);
+    // box index
+    const boxIndex = Math.floor(r / 3) * 3 + Math.floor(c / 3);
+    boxVals[boxIndex][n] = boxVals[boxIndex][n] || [];
+    boxVals[boxIndex][n].push(idx);
+  }
+
+  // second pass: mark duplicates in row/col/box as conflict
+  function markConflicts(map) {
+    for (let i = 0; i < map.length; i++) {
+      const m = map[i];
+      Object.keys(m).forEach((val) => {
+        if (m[val].length > 1) {
+          m[val].forEach(idx => inputs[idx].classList.add('conflict'));
+        }
+      });
+    }
+  }
+
+  markConflicts(rowVals);
+  markConflicts(colVals);
+  markConflicts(boxVals);
+}
+
 function renderPuzzle(puz) {
   puzzle = puz;
   const boardDiv = document.getElementById('sudoku-board');
@@ -89,12 +153,27 @@ function renderPuzzle(puz) {
       inp.value = '';
       inp.disabled = false;
       inp.className = 'sudoku-cell';
+      // add live validation listener for user inputs
+      inp.addEventListener('input', () => {
+        // sanitize: allow only digits 1-9, strip other chars
+        if (inp.value && !/^[1-9]$/.test(inp.value)) {
+          // keep only the first digit 1-9 if present
+          const m = inp.value.match(/[1-9]/);
+          inp.value = m ? m[0] : '';
+        }
+        validateBoardConflicts();
+      });
+      // optional: validate on blur as well
+      inp.addEventListener('blur', () => validateBoardConflicts());
     }
   }
 
   // Reset and start timer when a new puzzle is rendered
   resetTimer();
   startTimer();
+
+  // initial validation pass (no conflicts for fresh puzzle)
+  validateBoardConflicts();
 }
 
 async function newGame() {
@@ -139,12 +218,13 @@ async function checkSolution() {
       const idx = r * SIZE + c;
       const inp = inputs[idx];
       if (inp.disabled) continue;
-      inp.className = 'sudoku-cell';
+      inp.classList.remove('incorrect');
+      inp.classList.remove('filled');
       if (incorrect.has(idx)) {
-        inp.className += ' incorrect';
+        inp.classList.add('incorrect');
       } else if (inp.value !== '') {
         // mark as filled (user-entered)
-        inp.className += ' filled';
+        inp.classList.add('filled');
       }
     }
   }
@@ -159,12 +239,17 @@ async function checkSolution() {
     msg.style.color = '#d32f2f';
     msg.innerText = 'Some cells are incorrect.';
   }
+
+  // run conflict validation to clear any conflict markers now that server flagged incorrect cells
+  validateBoardConflicts();
 }
 
 // Wire buttons
 window.addEventListener('load', () => {
-  document.getElementById('new-game').addEventListener('click', (e) => { e.preventDefault(); newGame(); });
-  document.getElementById('check-solution').addEventListener('click', (e) => { e.preventDefault(); checkSolution(); });
+  const ng = document.getElementById('new-game');
+  if (ng) ng.addEventListener('click', (e) => { e.preventDefault(); newGame(); });
+  const cs = document.getElementById('check-solution');
+  if (cs) cs.addEventListener('click', (e) => { e.preventDefault(); checkSolution(); });
   // initialize timer display
   _updateTimerDisplay();
 });

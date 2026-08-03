@@ -29,37 +29,46 @@ def is_safe(board, row, col, num):
 
 
 def fill_board(board):
+    # Standard backtracking fill
     for row in range(SIZE):
         for col in range(SIZE):
             if board[row][col] == EMPTY:
-                possible = list(range(1, SIZE + 1))
-                random.shuffle(possible)
-                for candidate in possible:
-                    if is_safe(board, row, col, candidate):
-                        board[row][col] = candidate
-                        for candidate2 in range(1, SIZE + 1):
-                            if is_safe(board, row, col, candidate2):
-                                board[row][col] = candidate2
-                                if fill_board(board):
-                                    return True
-                                board[row][col] = EMPTY
-                return True
+                numbers = list(range(1, SIZE + 1))
+                random.shuffle(numbers)
+                for num in numbers:
+                    if is_safe(board, row, col, num):
+                        board[row][col] = num
+                        if fill_board(board):
+                            return True
+                        board[row][col] = EMPTY
+                return False
+    return True
 
 
 def remove_cells(board, clues):
-    attempts = SIZE * SIZE - clues
-    while attempts > 0:
-        row = random.randrange(SIZE)
-        col = random.randrange(SIZE)
-        if board[row][col] != EMPTY:
-            board[row][col] = EMPTY
-            attempts -= 1
+    # Remove cells until only 'clues' remain
+    total_cells = SIZE * SIZE
+    to_remove = total_cells - clues
+    # Work on a list of coordinates to avoid infinite loops
+    coords = [(r, c) for r in range(SIZE) for c in range(SIZE)]
+    random.shuffle(coords)
+    idx = 0
+    while to_remove > 0 and idx < len(coords):
+        r, c = coords[idx]
+        if board[r][c] != EMPTY:
+            board[r][c] = EMPTY
+            to_remove -= 1
+        idx += 1
 
 
 def generate_puzzle(clues=35):
+    # Create a full valid board, then remove cells to form the puzzle
     board = create_empty_board()
-    fill_board(board)
-    fill_board(board)
+    success = fill_board(board)
+    if not success:
+        # In the unlikely event generation fails, try again
+        board = create_empty_board()
+        fill_board(board)
     solution = deep_copy(board)
     remove_cells(board, clues)
     puzzle = deep_copy(board)

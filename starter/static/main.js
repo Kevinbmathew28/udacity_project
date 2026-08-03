@@ -11,6 +11,25 @@ let _elapsedBefore = 0;  // ms accumulated before current run
 let currentDifficulty = 'medium';
 let hintsUsed = 0;
 
+// Theme functions
+function setTheme(theme) {
+  const isDark = theme === 'dark';
+  document.documentElement.classList.toggle('dark-theme', isDark);
+  localStorage.setItem('sudoku_theme', isDark ? 'dark' : 'light');
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.innerText = isDark ? 'Light Mode' : 'Dark Mode';
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('sudoku_theme');
+  if (saved) {
+    setTheme(saved === 'dark' ? 'dark' : 'light');
+    return;
+  }
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  setTheme(prefersDark ? 'dark' : 'light');
+}
+
 function _formatTime(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -387,6 +406,8 @@ function updateLeaderboardUI() {
 
 // Wire buttons
 window.addEventListener('load', () => {
+  initTheme();
+
   const ng = document.getElementById('new-game');
   if (ng) ng.addEventListener('click', (e) => { e.preventDefault(); newGame(); });
   const cs = document.getElementById('check-solution');
@@ -395,6 +416,13 @@ window.addEventListener('load', () => {
   if (cp) cp.addEventListener('click', (e) => { e.preventDefault(); checkPuzzle(); });
   const hintBtn = document.getElementById('hint-button');
   if (hintBtn) hintBtn.addEventListener('click', (e) => { e.preventDefault(); requestHint(); });
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) themeToggle.addEventListener('click', (e) => {
+    e.preventDefault();
+    const cur = document.documentElement.classList.contains('dark-theme') ? 'dark' : 'light';
+    setTheme(cur === 'dark' ? 'light' : 'dark');
+  });
+
   // initialize timer display and leaderboard
   _updateTimerDisplay();
   updateLeaderboardUI();

@@ -1,18 +1,107 @@
+/* Theme-aware CSS using variables. Light theme defaults, dark theme overrides via .dark-theme on root */
+:root {
+  --bg: #ffffff;
+  --text: #0b1220;
+  --control-bg: transparent;
+  --control-text: #0b1220;
+
+  --cell-bg: #ffffff;
+  --cell-border: #d1d5db; /* gray-300 */
+  --cell-text: #0b1220;
+
+  --prefilled-bg: #e0f7fa;
+  --filled-bg: #e8f5e9;
+  --invalid-bg: #ffe6e6;
+  --invalid-border: #d32f2f;
+  --conflict-bg: #fff3cd;
+  --conflict-border: #f57c00;
+  --incorrect-bg: #ffe6e6;
+  --hint-bg: #e1f5fe;
+  --hint-border: #0288d1;
+
+  --card-bg: #ffffff;
+}
+
+.dark-theme {
+  --bg: #0b1220;
+  --text: #e6eef8;
+  --control-bg: transparent;
+  --control-text: #e6eef8;
+
+  --cell-bg: #0f1724; /* dark slate */
+  --cell-border: #23303f;
+  --cell-text: #e6eef8;
+
+  --prefilled-bg: #042f3f;
+  --filled-bg: #0a2a14;
+  --invalid-bg: #4b1a1a;
+  --invalid-border: #ff6b6b;
+  --conflict-bg: #4a3a0b;
+  --conflict-border: #ffb133;
+  --incorrect-bg: #4b1a1a;
+  --hint-bg: #053547;
+  --hint-border: #4cc3ff;
+
+  --card-bg: #071426;
+}
+
+/* Base layout */
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  transition: background 200ms ease, color 200ms ease;
+}
+
 .sudoku-board-grid {
   display: grid;
   grid-template-columns: repeat(9, 40px);
   gap: 4px;
   max-width: 380px;
+  background: transparent;
 }
-.sudoku-cell { width: 38px; height: 38px; text-align: center; font-size: 18px; }
-.sudoku-cell.prefilled { background: #e0f7fa; font-weight: bold; }
-.sudoku-cell.filled { background: #e8f5e9; }
-.sudoku-cell.invalid { background: #ffe6e6; border-color: #d32f2f; }
-.sudoku-cell.conflict { background: #fff3cd; border-color: #f57c00; }
-.sudoku-cell.incorrect { background: #ffe6e6; border-color: #d32f2f; }
-.sudoku-cell.hint { background: #e1f5fe; border-color: #0288d1; }
-.controls { margin-top: 12px; }
+.sudoku-cell {
+  width: 38px;
+  height: 38px;
+  text-align: center;
+  font-size: 18px;
+  background: var(--cell-bg);
+  color: var(--cell-text);
+  border: 1px solid var(--cell-border);
+  border-radius: 4px;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.sudoku-cell::selection { background: rgba(0,0,0,0.1); }
+
+.sudoku-cell.prefilled { background: var(--prefilled-bg); font-weight: bold; }
+.sudoku-cell.filled { background: var(--filled-bg); }
+.sudoku-cell.invalid { background: var(--invalid-bg); border-color: var(--invalid-border); }
+.sudoku-cell.conflict { background: var(--conflict-bg); border-color: var(--conflict-border); }
+.sudoku-cell.incorrect { background: var(--incorrect-bg); border-color: var(--invalid-border); }
+.sudoku-cell.hint { background: var(--hint-bg); border-color: var(--hint-border); font-weight: bold; }
+
+.controls {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.controls button, .controls select {
+  background: var(--control-bg);
+  color: var(--control-text);
+  border: 1px solid var(--cell-border);
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
 #timer { margin-left: 12px; font-weight: bold; }
 #message { margin-left: 12px; }
 #leaderboard { margin-top: 18px; max-width: 420px; }
 #leaderboard-list { padding-left: 20px; }
+
+/* Small responsive tweak */
+@media (max-width: 480px) {
+  .sudoku-board-grid { transform: scale(0.9); transform-origin: top left; }
+}
